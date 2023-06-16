@@ -1,7 +1,9 @@
 from PySide2 import QtCore, QtWidgets, QtGui
 
 # TODO stuff is not working
-
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 """
 This file holds a data mode class specialized for the organization of catalog content data
@@ -185,9 +187,10 @@ class CatalogContentTableModel(QtCore.QAbstractTableModel):
 class Selection_List_Model(QtCore.QAbstractItemModel):
 
     def __init__(self, items):
-        self.catalog_content_dict = items
-        self.headers = list(items[self.key_for_row(0)].keys())
+        self.item_data_dict = items
+        # self.headers = list(items[self.key_for_row(0)].keys())
         super().__init__()
+        # print(self.rowCount(), self.columnCount(), self.headers, items)
 
     # def get_header_for_section(self, section):
     #     if section > len(self.items.keys()):
@@ -252,8 +255,15 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
             The key representing the given row
 
         """
-        data_keys = list(self.catalog_content_dict.keys())
-        return data_keys[row]
+        logger.debug(f'Getting dictionary key for row: {row}')
+        try:
+            data_keys = list(self.item_data_dict.keys())
+            _key = data_keys[row]
+            logger.debug(f'Got key for row: {_key}')
+            return _key
+        except Exception as e:
+            logger.warning(f'Encountered exception while attempting to get the key for row: {row}')
+            logger.exception(e)
 
     def row_for_key(self, key):
         """
@@ -270,10 +280,43 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
             The row number
 
         """
-        _data_keys = list(self.catalog_content_dict.keys())
+        _data_keys = list(self.item_data_dict.keys())
         for _row in range(0, self.rowCount()):
             if self.key_for_row(_row) == key:
                 return _row
+
+    def header_for_column(self, column):
+        if self.columnCount() > 0:
+            logger.debug(f'Getting header title for column: {column}')
+            try:
+                _key_for_first_row = self.key_for_row(0)
+                _dict_for_first_row = self.item_data_dict[_key_for_first_row]
+                _keys_for_first_row = list(_dict_for_first_row.keys())
+
+                _header_title = _keys_for_first_row[column]
+
+                logger.debug(f'Successfully got header title: {_header_title}')
+
+                return _header_title
+            except Exception as e:
+                logger.warning(f'Encountered exception while attempting to get header title. Returning "null"')
+                logger.exception(e)
+                return "null"
+
+
+    def data_for_column_and_row(self, row, column):
+        logger.debug(f'Called to get data at row: {row}, column: {column}')
+        try:
+            _key_for_row = self.key_for_row(row)
+            _dict_for_row = self.item_data_dict[_key_for_row]
+            _dict_key_list = list(_dict_for_row.values())
+            _data = _dict_key_list[column]
+            logger.debug(f'Successfully got data: {_data}')
+            return _data
+        except Exception as e:
+            logger.warning(f'Encountered exception while attempting to get data. Returning "null"')
+            logger.exception(e)
+            return "null"
 
     def rowCount(self, parent=None, *args, **kwargs):
         """
@@ -292,7 +335,7 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
             The amount of rows
 
         """
-        return len(list(self.catalog_content_dict.keys()))
+        return len(list(self.item_data_dict.keys()))
 
     def columnCount(self, parent=None, *args, **kwargs):
         """
@@ -312,7 +355,7 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
 
         """
         _key_for_first_row = self.key_for_row(0)
-        _dict_for_first_row = self.catalog_content_dict[_key_for_first_row]
+        _dict_for_first_row = self.item_data_dict[_key_for_first_row]
         return len(_dict_for_first_row)
 
     def data(self, index, role=None):
@@ -332,15 +375,27 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
             The data for the given row and role
 
         """
+        logger.debug(f'Data method called with parameters: {index, role}')
         if role == QtCore.Qt.DisplayRole:
             _row = index.row()
             _column = index.column()
 
-            _key_for_row = self.key_for_row(_row)       # project name -- is key for the main contents dict
-            _dict_for_row = self.catalog_content_dict[_key_for_row]     # the dictionary for that given project
-            _dict_key_list = list(_dict_for_row.values())       # list of that dicts values
+            logger.debug(f'Getting data for index row: {_row}, column: {_column}')
 
-            return _dict_key_list[_column]
+            _data = self.data_for_column_and_row(_row, _column)
+
+            logger.debug(f'Data is: {_data}')
+
+            return _data
+
+        else:
+            return None
+
+    def parent(self, index):
+        return QtCore.QModelIndex()
+
+    def index(self, row, column, parent=None, *args, **kwargs):
+        return self.createIndex(row, column, parent)
 
     def headerData(self, section, orientation, role=None):
         """
@@ -364,10 +419,10 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.DisplayRole or orientation == QtCore.Qt.Vertical:
             return None
         else:
-            if section >= len(self.headers):
+            if section >= self.columnCount():
                 return None
             else:
-                _text = self.headers[section]
+                _text = self.header_for_column(section)
             return _text
 
 
@@ -386,12 +441,12 @@ if __name__ == "__main__":
     _model = Selection_List_Model(
         {"item": {"name":"object", "item type": "type"}}
     )
-    _view = Table_Item_Selection_View()
+    _view = QtWidgets.QTableView()
     #
     _view.setModel(_model)
 
-    _win = base_windows.Main_Window()
-    _win.setCentralWidget(_view)
-    _win.show()
+    # _win = base_windows.Main_Window()
+    # _win.setCentralWidget(_view)
+    _view.show()
 
     sys.exit(_app.exec_())

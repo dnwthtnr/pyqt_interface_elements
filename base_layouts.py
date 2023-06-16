@@ -41,13 +41,17 @@ class Layout(QtWidgets.QWidget):
         [self.addWidget(_widget, *args, **kwargs) for _widget in widgets]
 
     def clear_layout(self):
-        for _child in self.children:
-            self.disown_child(_child)
+        if len(self.children) > 0:
+            for _child in self.children:
+                self.disown_child(_child)
+
+            self.children = []
 
     def disown_child(self, child_widget):
-        child_widget.deleteLater()
-        _index = self.children.index(child_widget)
-        self.children.pop(_index)
+        child_widget.setParent(None)
+        del child_widget
+        # _index = self.children.index(child_widget)
+        # self.children.pop(_index)
 
 
 class Vertical_Layout(Layout):
