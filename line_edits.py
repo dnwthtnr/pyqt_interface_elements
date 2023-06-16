@@ -1,5 +1,5 @@
 
-from interface_elements import constants, base_layouts, base_widgets, base_windows, icons
+from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons
 from PySide2 import QtCore, QtWidgets, QtGui
 from functools import partial
 import os

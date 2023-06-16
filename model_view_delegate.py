@@ -378,7 +378,7 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
 
 
 if __name__ == "__main__":
-    from interface_elements import base_windows
+    from pyqt_interface_elements import base_windows
     import sys
 
 

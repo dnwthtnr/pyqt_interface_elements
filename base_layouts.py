@@ -1,6 +1,6 @@
 
 from PySide2 import QtCore, QtWidgets, QtGui
-from interface_elements import constants
+from pyqt_interface_elements import constants
 
 
 class Layout(QtWidgets.QWidget):
