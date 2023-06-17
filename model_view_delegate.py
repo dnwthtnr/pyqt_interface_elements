@@ -9,6 +9,7 @@ logger.setLevel(logging.INFO)
 This file holds a data mode class specialized for the organization of catalog content data
 """
 from PySide2 import QtCore
+from animation_exporter.utility_resources import settings
 
 
 
@@ -188,7 +189,132 @@ class Maya_Outliner_Tree_Model(QtCore.QAbstractItemModel):
         self.dictionary = item_dictionary
         super().__init__()
 
-    
+        self.nodes = []
+
+    def key_for_row
+
+    def rowCount(self, parent=None, *args, **kwargs):
+        """
+        The amount of rows in the model
+
+        Parameters
+        ----------
+        parent : QModelIndex
+            Parent index
+        args :
+        kwargs :
+
+        Returns
+        -------
+        int
+            The amount of rows
+
+        """
+
+        parent
+
+        return len(list(self.item_data_dict.keys()))
+
+    def columnCount(self, parent=None, *args, **kwargs):
+        """
+        Column amount is based on the amount of data given in the dict for each project
+
+        Parameters
+        ----------
+        parent : QtCore.QModelIndex
+            The parent model index -- not applicable in a table model
+        args :
+        kwargs :
+
+        Returns
+        -------
+        int
+            The amount of columns
+
+        """
+        _key_for_first_row = self.key_for_row(0)
+        _dict_for_first_row = self.item_data_dict[_key_for_first_row]
+        return len(_dict_for_first_row)
+
+    def data(self, index, role=None):
+        """
+        Returns the data for the given index and role
+
+        Parameters
+        ----------
+        index : QtCore.QModelIndex
+            The index to get data for
+        role : QtCore.Qt.Role
+            The role to get data for
+
+        Returns
+        -------
+        object
+            The data for the given row and role
+
+        """
+        logger.debug(f'Data method called with parameters: {index, role}')
+        if role == QtCore.Qt.DisplayRole:
+            _row = index.row()
+            _column = index.column()
+
+            logger.debug(f'Getting data for index row: {_row}, column: {_column}')
+
+            _data = self.data_for_column_and_row(_row, _column)
+
+            logger.debug(f'Data is: {_data}')
+
+            return _data
+
+        else:
+            return None
+
+    def parent(self, index):
+        _row = index.row()
+        _column = index.column()
+
+        return QtCore.QModelIndex()
+
+    def index(self, row, column, parent=None, *args, **kwargs):
+        return self.createIndex(row, column, parent)
+
+    def headerData(self, section, orientation, role=None):
+        """
+        Returns the header data for the given index and role
+
+        Parameters
+        ----------
+        section : int
+            The index to get header data for.
+        orientation : QtCore.Qt.Orientation
+            The orientation of the header to get data for.
+        role : QtCore.Qt.Role
+            The role to get header data for.
+
+        Returns
+        -------
+        object
+            The header data for the given header index and row
+
+        """
+        if role != QtCore.Qt.DisplayRole or orientation == QtCore.Qt.Vertical:
+            return None
+        else:
+            if section >= self.columnCount():
+                return None
+            else:
+                _text = self.header_for_column(section)
+            return _text
+
+
+class Node(object):
+
+    def __int__(self, item_dictionary):
+        super().__init__()
+        self.parent = item_dictionary.get("Parent")
+        self.children = item_dictionary.get("Children")
+        self.name = item_dictionary.get("Object Name")
+        self.animation_range = item_dictionary.get("Animation Range")
 
 
 class Selection_List_Model(QtCore.QAbstractItemModel):
@@ -198,53 +324,6 @@ class Selection_List_Model(QtCore.QAbstractItemModel):
         # self.headers = list(items[self.key_for_row(0)].keys())
         super().__init__()
         # print(self.rowCount(), self.columnCount(), self.headers, items)
-
-    # def get_header_for_section(self, section):
-    #     if section > len(self.items.keys()):
-    #         return
-    #     _keys = list(self.items.keys())
-    #     _keys.insert(0, "Object Name")
-    #     return _keys[section]
-    #
-    # def get_key_for_row(self, row):
-    #     return list(self.items.keys())[row]
-
-    # def data(self, index, role=None):
-    #     _row = index.row()
-    #     _column = index.column()
-    #
-    #     if _row > len(self.items.keys()):
-    #         return
-    #
-    #     if role == QtCore.Qt.DisplayRole:
-    #         return "Stuff"
-    #
-    #     if role == QtCore.Qt.DisplayRole:
-    #         if _column == 0:
-    #             return self.get_key_for_row(_row)
-    #         else:
-    #             return self.get_key_for_row(_row)[self.get_header_for_section(_column)]
-    #
-    # def rowCount(self, parent=None, *args, **kwargs):
-    #     return 5
-    #     return len(self.items.keys())
-    #
-    # def columnCount(self, parent=None, *args, **kwargs):
-    #     return 6
-    #     return len(self.get_key_for_row(0))
-    #
-    # def headerData(self, section, orientation, role=None):
-    #     return "header"
-    #     if orientation != QtCore.Qt.Vertical:
-    #         if role == QtCore.Qt.DisplayRole:
-    #             return self.get_header_for_section(section)
-    #     return
-    #
-    # def index(self, row, column, parent=None, *args, **kwargs):
-    #     if row > self.rowCount() or column > self.columnCount():
-    #         return QtCore.QModelIndex()
-    #     else:
-    #         return self.createIndex(row, column)
 
     def key_for_row(self, row):
         """
@@ -438,17 +517,23 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
     def __init__(self):
         super().__init__()
 
+class Tree_Item_Selection_View(QtWidgets.QTreeView):
+
+    def __init__(self):
+        super().__init__()
+
 
 if __name__ == "__main__":
+
+    _dict = r"Q:\__packages\_GitHub\animation_exporter\animation_exporter_interface\test\tree_model_dict.json"
+    _data = settings.read_json(_dict)
     from pyqt_interface_elements import base_windows
     import sys
 
 
     _app = QtWidgets.QApplication(sys.argv)
-    _model = Selection_List_Model(
-        {"item": {"name":"object", "item type": "type"}}
-    )
-    _view = QtWidgets.QTableView()
+    _model = Maya_Outliner_Tree_Model(_data)
+    _view = Tree_Item_Selection_View()
     #
     _view.setModel(_model)
 
