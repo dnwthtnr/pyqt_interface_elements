@@ -181,63 +181,262 @@ class CatalogContentTableModel(QtCore.QAbstractTableModel):
                 _text = self.headers[section]
             return _text
 
+####################################################
 
+class Node:
+
+    def __init__(self, node_data_dictionary):
+        self.parent = node_data_dictionary.get("Parent")
+        self.children = node_data_dictionary.get("Children")
+        self.display_name = node_data_dictionary.get("Object Name", "")
+        self.animation_range = node_data_dictionary.get("Absolute Animation Range", "")
+
+        self.parent_node = None
+        self.child_nodes = []
+
+    def child_count(self):
+        return len(self.child_nodes)
+
+    def child(self, row):
+        if len(self.child_nodes) > 0:
+            return self.child_nodes[row]
+        return None
+
+    def index_in_parents_children_list(self):
+        if self.parent_node is not None:
+            return self.parent_node.child_nodes.index(self)
+
+
+class Selection_Tree_Model(QtCore.QAbstractItemModel):
+
+    def __init__(self, items_flat_dict):
+        self.items_flat_dict = items_flat_dict
+        # self.headers = list(items[self.key_for_row(0)].keys())
+        super().__init__()
+
+        self.root_node = Node({})
+        self.nodes = self.create_nodes_from_dictionary(self.items_flat_dict)
+        self.set_node_hierarchy(self.nodes)
+
+    def create_nodes_from_dictionary(self, dictionary):
+        """
+        Given a flat dictionary will create node objects from it
+
+        Parameters
+        ----------
+        dictionary
+
+        Returns
+        -------
+
+        """
+        _nodes = []
+        for item_key in list(dictionary.keys()):
+            _item_dictionary = dictionary[item_key]
+            _node = Node(_item_dictionary)
+            _nodes.append(_node)
+
+        return _nodes
+
+    def set_node_hierarchy(self, node_list):
+        """
+        Iterates through the node list and sets the children and parent nodes for each
+        Parameters
+        ----------
+        node_list
+
+        Returns
+        -------
+
+        """
+        for _node in node_list:
+            _node_children = _node.children
+            if _node.parent is None:
+                _node.parent_node = self.root_node
+                self.root_node.child_nodes.append(_node)
+            if _node_children is None:
+                continue
+            else:
+                for _child in _node_children:
+                    _child_node = self.get_node_for_display_name(_child)
+                    _child_node.parent_node = _node
+                    _node.child_nodes.append(_child_node)
+        return
+
+    def get_node_for_display_name(self, display_name):
+        for _node in self.nodes:
+            if _node.display_name == display_name:
+                _node = _node
+                return _node
+
+    def header_for_column(self, column):
+        if self.columnCount() > 0:
+            logger.debug(f'Getting header title for column: {column}')
+            try:
+                _key_for_first_row = self.key_for_row(0)
+                _dict_for_first_row = self.item_data_dict[_key_for_first_row]
+                _keys_for_first_row = list(_dict_for_first_row.keys())
+
+                _header_title = _keys_for_first_row[column]
+
+                logger.debug(f'Successfully got header title: {_header_title}')
+
+                return _header_title
+            except Exception as e:
+                logger.warning(f'Encountered exception while attempting to get header title. Returning "null"')
+                logger.exception(e)
+                return "null"
+
+
+    def data_for_column_and_row(self, row, column):
+        logger.debug(f'Called to get data at row: {row}, column: {column}')
+        try:
+            _key_for_row = self.key_for_row(row)
+            _dict_for_row = self.item_data_dict[_key_for_row]
+            _dict_key_list = list(_dict_for_row.values())
+            _data = _dict_key_list[column]
+            logger.debug(f'Successfully got data: {_data}')
+            return _data
+        except Exception as e:
+            logger.warning(f'Encountered exception while attempting to get data. Returning "null"')
+            logger.exception(e)
+            return "null"
+
+    def rowCount(self, parent=None, *args, **kwargs):
+        """
+        The amount of rows in the model
+
+        Parameters
+        ----------
+        parent : QModelIndex
+            Parent index
+        args :
+        kwargs :
+
+        Returns
+        -------
+        int
+            The amount of rows
+
+        """
+        if parent.isValid() is False:
+            _node = self.root_node
+        else:
+            _node = parent.internalPointer()
+        return _node.child_count()
+
+    def columnCount(self, parent=None, *args, **kwargs):
+        """
+        Column amount is based on the amount of data given in the dict for each project
+
+        Parameters
+        ----------
+        parent : QtCore.QModelIndex
+            The parent model index -- not applicable in a table model
+        args :
+        kwargs :
+
+        Returns
+        -------
+        int
+            The amount of columns
+
+        """
+        return 2
+
+    def data(self, index, role=None):
+        """
+        Returns the data for the given index and role
+
+        Parameters
+        ----------
+        index : QtCore.QModelIndex
+            The index to get data for
+        role : QtCore.Qt.Role
+            The role to get data for
+
+        Returns
+        -------
+        object
+            The data for the given row and role
+
+        """
+        logger.debug(f'Data method called with parameters: {index, role}')
+        if role == QtCore.Qt.DisplayRole:
+            _node = index.internalPointer()
+            if _node != self.root_node:
+                if index.column() == 0:
+                    return _node.display_name
+                if index.column() == 1:
+                    return _node.animation_range
+
+        return None
+
+    def parent(self, index):
+        if index.isValid() is False:
+            return QtCore.QModelIndex()
+        _node =index.internalPointer()
+        _parent_node = _node.parent_node
+
+        if _node == self.root_node:
+            return QtCore.QModelIndex()
+
+        if _parent_node == self.root_node:
+            return QtCore.QModelIndex()
+        else:
+            return self.createIndex(_parent_node.index_in_parents_children_list(), index.column(), _parent_node.parent_node)
+        return  QtCore.QModelIndex()
+
+    def index(self, row, column, parent=None, *args, **kwargs):
+        if self.hasIndex(row, column, parent) is False:
+            return QtCore.QModelIndex()
+
+        if parent.isValid() is False:
+            _parent = QtCore.QModelIndex()
+            _parent_node = self.root_node
+        else:
+            _parent = parent.internalPointer()
+            _parent_node = parent.internalPointer()
+
+        _node = _parent_node.child_nodes[row]
+        if _node is not None:
+            return self.createIndex(row, column, _node)
+        return QtCore.QModelIndex()
+
+    # def headerData(self, section, orientation, role=None):
+    #     """
+    #     Returns the header data for the given index and role
+    #
+    #     Parameters
+    #     ----------
+    #     section : int
+    #         The index to get header data for.
+    #     orientation : QtCore.Qt.Orientation
+    #         The orientation of the header to get data for.
+    #     role : QtCore.Qt.Role
+    #         The role to get header data for.
+    #
+    #     Returns
+    #     -------
+    #     object
+    #         The header data for the given header index and row
+    #
+    #     """
+    #     if role != QtCore.Qt.DisplayRole or orientation == QtCore.Qt.Vertical:
+    #         return None
+    #     else:
+    #         if section >= self.columnCount():
+    #             return None
+    #         else:
+    #             _text = self.header_for_column(section)
+    #         return _text
 
 
 class Selection_List_Model(QtCore.QAbstractItemModel):
 
     def __init__(self, items):
         self.item_data_dict = items
-        # self.headers = list(items[self.key_for_row(0)].keys())
         super().__init__()
-        # print(self.rowCount(), self.columnCount(), self.headers, items)
-
-    # def get_header_for_section(self, section):
-    #     if section > len(self.items.keys()):
-    #         return
-    #     _keys = list(self.items.keys())
-    #     _keys.insert(0, "Object Name")
-    #     return _keys[section]
-    #
-    # def get_key_for_row(self, row):
-    #     return list(self.items.keys())[row]
-
-    # def data(self, index, role=None):
-    #     _row = index.row()
-    #     _column = index.column()
-    #
-    #     if _row > len(self.items.keys()):
-    #         return
-    #
-    #     if role == QtCore.Qt.DisplayRole:
-    #         return "Stuff"
-    #
-    #     if role == QtCore.Qt.DisplayRole:
-    #         if _column == 0:
-    #             return self.get_key_for_row(_row)
-    #         else:
-    #             return self.get_key_for_row(_row)[self.get_header_for_section(_column)]
-    #
-    # def rowCount(self, parent=None, *args, **kwargs):
-    #     return 5
-    #     return len(self.items.keys())
-    #
-    # def columnCount(self, parent=None, *args, **kwargs):
-    #     return 6
-    #     return len(self.get_key_for_row(0))
-    #
-    # def headerData(self, section, orientation, role=None):
-    #     return "header"
-    #     if orientation != QtCore.Qt.Vertical:
-    #         if role == QtCore.Qt.DisplayRole:
-    #             return self.get_header_for_section(section)
-    #     return
-    #
-    # def index(self, row, column, parent=None, *args, **kwargs):
-    #     if row > self.rowCount() or column > self.columnCount():
-    #         return QtCore.QModelIndex()
-    #     else:
-    #         return self.createIndex(row, column)
 
     def key_for_row(self, row):
         """
@@ -431,17 +630,25 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
     def __init__(self):
         super().__init__()
 
+class Tree_Item_Selection_View(QtWidgets.QTreeView):
+
+    def __init__(self):
+        super().__init__()
+
 
 if __name__ == "__main__":
     from pyqt_interface_elements import base_windows
     import sys
+    from animation_exporter.utility_resources import settings
+
+    _data = settings.read_json(r"Q:\__packages\_GitHub\animation_exporter\animation_exporter_interface\test\tree_model_dict.json")
 
 
     _app = QtWidgets.QApplication(sys.argv)
-    _model = Selection_List_Model(
-        {"item": {"name":"object", "item type": "type"}}
+    _model = Selection_Tree_Model(
+        _data
     )
-    _view = QtWidgets.QTableView()
+    _view = Tree_Item_Selection_View()
     #
     _view.setModel(_model)
 
