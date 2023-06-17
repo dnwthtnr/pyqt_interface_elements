@@ -182,6 +182,13 @@ class CatalogContentTableModel(QtCore.QAbstractTableModel):
             return _text
 
 
+class Maya_Outliner_Tree_Model(QtCore.QAbstractItemModel):
+
+    def __int__(self, item_dictionary):
+        self.dictionary = item_dictionary
+        super().__init__()
+
+    
 
 
 class Selection_List_Model(QtCore.QAbstractItemModel):
