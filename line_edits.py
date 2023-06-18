@@ -12,6 +12,7 @@ logger.setLevel(logging.NOTSET)
 
 class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     FileSelected = QtCore.Signal(str)
+    textEdited = QtCore.Signal(str)
 
     def __init__(self, filepath, extension=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,6 +32,7 @@ class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     def build_lineedit(self, filepath):
         filepath = filepath if os.path.exists(filepath) else ""
         _line_edit = base_widgets.Line_Edit(text=filepath)
+        _line_edit.textEdited.connect(self.textEdited.emit)
         self.FileSelected.connect(_line_edit.setText)
         return _line_edit
 
@@ -56,13 +58,17 @@ class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
 
 class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     FileSelected = QtCore.Signal(str)
+    textEdited = QtCore.Signal(str)
 
     def __init__(self, filepath, extension=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.extension = extension
-        self.filepath = filepath
-
+        self.line_edit = None
         self.build_widget(filepath)
+
+    @property
+    def directory(self):
+        return self.line_edit.text()
 
     def build_widget(self, filepath):
         self.line_edit = self.build_lineedit(filepath)
@@ -75,6 +81,7 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     def build_lineedit(self, filepath):
         filepath = filepath if os.path.exists(filepath) else ""
         _line_edit = base_widgets.Line_Edit(text=filepath)
+        _line_edit.textEdited.connect(self.textEdited.emit)
         self.FileSelected.connect(_line_edit.setText)
         return _line_edit
 

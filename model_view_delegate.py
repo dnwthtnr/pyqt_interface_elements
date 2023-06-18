@@ -190,6 +190,7 @@ class Node:
         self.children = node_data_dictionary.get("Children")
         self.display_name = node_data_dictionary.get("Object Name", "")
         self.animation_range = node_data_dictionary.get("Absolute Animation Range", "")
+        self.type = node_data_dictionary.get("Type", "")
 
         self.parent_node = None
         self.child_nodes = []
@@ -217,6 +218,10 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         self.root_node = Node({})
         self.nodes = self.create_nodes_from_dictionary(self.items_flat_dict)
         self.set_node_hierarchy(self.nodes)
+        print([_node.display_name for _node in self.root_node.child_nodes])
+        _node = self.get_node_for_display_name(display_name="naughtydog_test_rig_grp")
+        print([_n.display_name for _n in _node.child_nodes])
+        print(self.get_node_for_display_name("persp").parent_node.display_name )
 
     def create_nodes_from_dictionary(self, dictionary):
         """
@@ -254,13 +259,14 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             if _node.parent is None:
                 _node.parent_node = self.root_node
                 self.root_node.child_nodes.append(_node)
+
             if _node_children is None:
                 continue
-            else:
-                for _child in _node_children:
-                    _child_node = self.get_node_for_display_name(_child)
-                    _child_node.parent_node = _node
-                    _node.child_nodes.append(_child_node)
+
+            for _child in _node_children:
+                _child_node = self.get_node_for_display_name(_child)
+                _child_node.parent_node = _node
+                _node.child_nodes.append(_child_node)
         return
 
     def get_node_for_display_name(self, display_name):
@@ -286,7 +292,6 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
                 logger.warning(f'Encountered exception while attempting to get header title. Returning "null"')
                 logger.exception(e)
                 return "null"
-
 
     def data_for_column_and_row(self, row, column):
         logger.debug(f'Called to get data at row: {row}, column: {column}')
@@ -342,7 +347,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             The amount of columns
 
         """
-        return 2
+        return 3
 
     def data(self, index, role=None):
         """
@@ -368,6 +373,8 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
                 if index.column() == 0:
                     return _node.display_name
                 if index.column() == 1:
+                    return _node.type
+                if index.column() == 2:
                     return _node.animation_range
 
         return None
@@ -384,8 +391,8 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         if _parent_node == self.root_node:
             return QtCore.QModelIndex()
         else:
-            return self.createIndex(_parent_node.index_in_parents_children_list(), index.column(), _parent_node.parent_node)
-        return  QtCore.QModelIndex()
+            return self.createIndex(_parent_node.index_in_parents_children_list(), index.column(), _parent_node)
+        return QtCore.QModelIndex()
 
     def index(self, row, column, parent=None, *args, **kwargs):
         if self.hasIndex(row, column, parent) is False:
@@ -432,7 +439,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
     #         return _text
 
 
-class Selection_List_Model(QtCore.QAbstractItemModel):
+class Selection_Table_Model(QtCore.QAbstractItemModel):
 
     def __init__(self, items):
         self.item_data_dict = items
@@ -631,9 +638,30 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
         super().__init__()
 
 class Tree_Item_Selection_View(QtWidgets.QTreeView):
+    SelectionChanged = QtCore.Signal(object)
 
     def __init__(self):
         super().__init__()
+
+    def setModel(self, model):
+        super().setModel(model)
+
+        self.selectionModel().currentRowChanged.connect(self.row_selection_changed)
+
+    @QtCore.Slot()
+    def row_selection_changed(self, current, previous):
+        _model = self.model()
+
+        _current_index = self.selectionModel().currentIndex()
+        _data = _model.data(_model.index( _current_index.row(), 0, _model.parent(_current_index)), role=QtCore.Qt.DisplayRole)
+        self.SelectionChanged.emit(_data)
+
+    def current_selection(self):
+        _model = self.model()
+
+        _current_index = self.selectionModel().currentIndex()
+        _selection = _model.data(_model.index( _current_index.row(), 0, _model.parent(_current_index)), role=QtCore.Qt.DisplayRole)
+        return _selection
 
 
 if __name__ == "__main__":
