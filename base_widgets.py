@@ -20,3 +20,14 @@ class Label(QtWidgets.QLabel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class TextEdit(QtWidgets.QTextEdit):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class Spacer(QtWidgets.QSpacerItem):
+
+    def __init__(self, width, height, *args, **kwargs):
+        super().__init__(width, height, *args, **kwargs)
+

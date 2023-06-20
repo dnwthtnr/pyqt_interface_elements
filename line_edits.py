@@ -10,6 +10,33 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.NOTSET)
 
 
+class FloatLineEdit(base_widgets.Line_Edit):
+
+    def __init__(self, value=0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setValue(value)
+        self.setValidator(QtGui.QDoubleValidator())
+
+    def value(self):
+        return float(self.text())
+
+    def setValue(self, value):
+        self.setText(str(value))
+
+class IntLineEdit(base_widgets.Line_Edit):
+
+    def __init__(self, value=0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setValue(value)
+        self.setValidator(QtGui.QIntValidator())
+
+    def value(self):
+        return float(self.text())
+
+    def setValue(self, value):
+        self.setText(str(value))
+
+
 class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     FileSelected = QtCore.Signal(str)
     textEdited = QtCore.Signal(str)
@@ -60,11 +87,10 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
     FileSelected = QtCore.Signal(str)
     textEdited = QtCore.Signal(str)
 
-    def __init__(self, filepath, extension=None, *args, **kwargs):
+    def __init__(self, directory,  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.extension = extension
         self.line_edit = None
-        self.build_widget(filepath)
+        self.build_widget(directory)
 
     @property
     def directory(self):
@@ -103,3 +129,37 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
 
+class TwoDimensionalFloat(base_layouts.Horizontal_Layout):
+    valueChanged = QtCore.Signal(list)
+
+    def __init__(self, x_val, y_val, *args, **kwargs):
+        super().__init__(spacing=5, *args, **kwargs)
+
+        self.x_line = FloatLineEdit(value=x_val)
+        self.x_line.textEdited.connect(self.emit_value_changed)
+        self.y_line = FloatLineEdit(value=y_val)
+        self.y_line.textEdited.connect(self.emit_value_changed)
+
+        self.addWidget(self.x_line)
+        self.addWidget(self.y_line)
+
+    @property
+    def value(self):
+        return [self.x_value, self.y_value]
+
+    @property
+    def x_value(self):
+        return self.x_line.value()
+
+    def set_x_value(self, value):
+        self.x_line.setValue(value)
+
+    def emit_value_changed(self, *args):
+        self.valueChanged.emit([self.x_value, self.y_value])
+
+    @property
+    def y_value(self):
+        return self.y_line.value()
+
+    def set_y_value(self, value):
+        self.y_line.setValue(value)
