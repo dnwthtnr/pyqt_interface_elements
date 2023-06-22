@@ -31,3 +31,8 @@ class Spacer(QtWidgets.QSpacerItem):
     def __init__(self, width, height, *args, **kwargs):
         super().__init__(width, height, *args, **kwargs)
 
+
+class ComboBox(QtWidgets.QComboBox):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
