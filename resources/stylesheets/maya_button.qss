@@ -1,0 +1,4 @@
+QButton{
+background-color: @maya_button_background;
+color: @maya_white_text;
+}

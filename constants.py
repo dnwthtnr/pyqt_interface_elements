@@ -13,3 +13,4 @@ align_bottom = QtCore.Qt.AlignBottom
 align_center = QtCore.Qt.AlignCenter
 
 icon_local_directory = os.path.join(current_directory, "resources", "icons")
+stylesheets_local_directory = os.path.join(current_directory, "resources", "stylesheets")

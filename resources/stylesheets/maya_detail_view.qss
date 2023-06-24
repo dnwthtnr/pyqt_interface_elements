@@ -1,0 +1,14 @@
+*{
+background-color: @maya_outliner_background;
+color: @maya_white_text;
+}
+QHeaderView::section{
+background-color: @maya_outliner_background;
+color: @maya_white_text;
+}
+QLineEdit{
+background-color: @maya_negative_space;
+color: @maya_white_text;
+border: none;
+}
+@@maya_button@@

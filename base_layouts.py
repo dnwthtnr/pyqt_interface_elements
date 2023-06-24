@@ -29,6 +29,11 @@ class Layout(QtWidgets.QWidget):
 
         self.setLayout(self.layout)
 
+    def paintEvent(self, event):
+        self.setAutoFillBackground(True)
+
+        super().paintEvent(event)
+
 
     @property
     def layout(self):
