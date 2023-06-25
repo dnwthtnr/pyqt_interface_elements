@@ -1,6 +1,6 @@
-
+from functools import partial
 from PySide2 import QtCore, QtWidgets, QtGui
-from pyqt_interface_elements import constants
+from pyqt_interface_elements import constants, buttons, icons
 
 
 class Layout(QtWidgets.QWidget):
@@ -104,6 +104,56 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class ExpandWhenClicked(Horizontal_Layout):
+
+    def __init__(self, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
+        super().__init__(margins=margins, spacing=spacing, *args, **kwargs)
+
+        self.dropdown = self.build_dropdown_button()
+
+        self.collapsed_layout = self.build_collapsed()
+        self.expanded_layout = self.build_expanded()
+
+
+
+        _layouts = Vertical_Layout()
+        _layouts.addWidget(self.collapsed_layout, alignment=constants.align_top)
+        _layouts.addWidget(self.expanded_layout)
+
+
+        self.addWidget(self.dropdown, alignment=constants.align_left | constants.align_top)
+        self.addWidget(_layouts)
+
+    def build_dropdown_button(self):
+        _dropdown = buttons.ToggleIconButton(enabled_icon=icons.up_arrow, disabled_icon=icons.down_arrow)
+        _dropdown.enabled.connect(partial(self.setExpandedState, False))
+        _dropdown.disabled.connect(partial(self.setExpandedState, True))
+        return _dropdown
+
+    def build_collapsed(self):
+
+        _layout = Horizontal_Layout()
+
+        return _layout
+
+    def build_expanded(self):
+        _layout = Vertical_Layout()
+        _layout.hide()
+        return _layout
+
+    def addCollapsedWidget(self, widget, *args, **kwargs):
+        self.collapsed_layout.addWidget(widget, *args, **kwargs)
+
+    def addExpandedWidget(self, widget, *args, **kwargs):
+        self.expanded_layout.addWidget(widget, *args, **kwargs)
+
+    def setExpandedState(self, expanded):
+        if expanded is True:
+            self.expanded_layout.show()
+        else:
+            self.expanded_layout.hide()
 
 if __name__ == "__main__":
     import sys
