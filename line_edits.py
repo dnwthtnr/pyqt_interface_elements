@@ -65,6 +65,7 @@ class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
 
     def build_button(self):
         _button = base_widgets.Tool_Button()
+        _button.setStyleSheet("border: none;")
         _button.setIcon(icons.open_file)
         _button.clicked.connect(self.open_file_dialogue)
         return _button
@@ -113,6 +114,7 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
 
     def build_button(self):
         _button = base_widgets.Tool_Button()
+        _button.setStyleSheet("border: none;")
         _button.setIcon(icons.open_file)
         _button.clicked.connect(self.open_file_dialogue)
         return _button
@@ -132,7 +134,7 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
 class TwoDimensionalFloat(base_layouts.Horizontal_Layout):
     valueChanged = QtCore.Signal(list)
 
-    def __init__(self, x_val, y_val, *args, **kwargs):
+    def __init__(self, x_val, y_val, seperator="-", *args, **kwargs):
         super().__init__(spacing=5, *args, **kwargs)
 
         self.x_line = FloatLineEdit(value=x_val)
@@ -140,7 +142,10 @@ class TwoDimensionalFloat(base_layouts.Horizontal_Layout):
         self.y_line = FloatLineEdit(value=y_val)
         self.y_line.textEdited.connect(self.emit_value_changed)
 
+        self.seperator = base_widgets.Label(text=seperator)
+
         self.addWidget(self.x_line)
+        self.addWidget(self.seperator)
         self.addWidget(self.y_line)
 
     @property

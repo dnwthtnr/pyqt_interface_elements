@@ -16,6 +16,7 @@ variables = {
     "@maya_outliner_background;": "#373737;",
     "@maya_blue_selection;": "#568aad;",
     "@maya_negative_space;": "#2b2b2b;",
+    "@maya_expanded_background;": "#494949;",
 }
 
 def get_style_var(style):
@@ -47,3 +48,5 @@ maya_widget = get_stylesheet("maya_widget.qss")
 maya_outliner = get_stylesheet("maya_outliner.qss")
 maya_detail_view = get_stylesheet("maya_detail_view.qss")
 maya_splitter = get_stylesheet("maya_splitter.qss")
+maya_expanded_collapsible_layout = get_stylesheet("maya_expanded_collapsible_layout.qss")
+maya_collapsed_layout = get_stylesheet("maya_collapsed_layout.qss")
