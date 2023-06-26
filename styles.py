@@ -37,7 +37,6 @@ def get_stylesheet(style):
         _data = f.read()
 
     _data = get_style_var(style)
-    print(process_stylesheet(_data, style_var))
 
     return process_stylesheet(_data, style_var)
 
@@ -50,3 +49,4 @@ maya_detail_view = get_stylesheet("maya_detail_view.qss")
 maya_splitter = get_stylesheet("maya_splitter.qss")
 maya_expanded_collapsible_layout = get_stylesheet("maya_expanded_collapsible_layout.qss")
 maya_collapsed_layout = get_stylesheet("maya_collapsed_layout.qss")
+maya_tab_widget = get_stylesheet("maya_tab_widget.qss")

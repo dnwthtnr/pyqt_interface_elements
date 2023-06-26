@@ -167,9 +167,7 @@ class AbstractEntryHolder(base_layouts.Vertical_Layout):
         self._build(attribute_dictionary, attribute_mapping_dictionary, map_by_type, attribute_title_width)
 
     def _build(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type, attribute_title_width):
-        print('building')
         for _attribute_name, _attribute_value in attribute_dictionary.items():
-            print(_attribute_value, _attribute_name)
             _attribute_entry = self.create_attribute_entry(
                 _attribute_name,
                 _attribute_value,
