@@ -1,0 +1,10 @@
+QMenuBar{
+background-color: @maya_widget;
+color: @maya_white_text;
+border: none;
+}
+QMenu{
+background-color: @maya_widget;
+color: @maya_white_text;
+border: none;
+}

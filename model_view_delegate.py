@@ -188,12 +188,13 @@ class Node:
     def __init__(self, node_data_dictionary):
         self.parent = node_data_dictionary.get("Parent")
         self.children = node_data_dictionary.get("Children")
-        self.display_name = node_data_dictionary.get("Object Name", "")
+        self.unique_name = node_data_dictionary.get("Object Name", "")
         self.animation_range = node_data_dictionary.get("Absolute Animation Range", "")
         self.type = node_data_dictionary.get("Type", "")
 
         self.parent_node = None
         self.child_nodes = []
+        self.display_name = self.unique_name.split("|")[-1]
 
     def child_count(self):
         return len(self.child_nodes)
@@ -218,10 +219,9 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         self.root_node = Node({})
         self.nodes = self.create_nodes_from_dictionary(self.items_flat_dict)
         self.set_node_hierarchy(self.nodes)
-        print([_node.display_name for _node in self.root_node.child_nodes])
-        _node = self.get_node_for_display_name(display_name="naughtydog_test_rig_grp")
-        print([_n.display_name for _n in _node.child_nodes])
-        print(self.get_node_for_display_name("persp").parent_node.display_name )
+        # print([_node.display_name for _node in self.root_node.child_nodes])
+        # print([_n.display_name for _n in _node.children])
+        # print(self.get_node_for_display_name("persp").parent_node.display_name )
 
     def create_nodes_from_dictionary(self, dictionary):
         """
@@ -271,7 +271,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
 
     def get_node_for_display_name(self, display_name):
         for _node in self.nodes:
-            if _node.display_name == display_name:
+            if _node.unique_name == display_name:
                 _node = _node
                 return _node
 
@@ -279,11 +279,12 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         if self.columnCount() > 0:
             logger.debug(f'Getting header title for column: {column}')
             try:
-                _key_for_first_row = self.key_for_row(0)
-                _dict_for_first_row = self.item_data_dict[_key_for_first_row]
-                _keys_for_first_row = list(_dict_for_first_row.keys())
+                if column == 0:
+                    _title = "Name"
+                if column == 1:
+                    _title = "Animation Range"
 
-                _header_title = _keys_for_first_row[column]
+                _header_title = _title
 
                 logger.debug(f'Successfully got header title: {_header_title}')
 
@@ -347,7 +348,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             The amount of columns
 
         """
-        return 3
+        return 2
 
     def data(self, index, role=None):
         """
@@ -372,10 +373,15 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             if _node != self.root_node:
                 if index.column() == 0:
                     return _node.display_name
+                # if index.column() == 1:
+                #     return _node.type
                 if index.column() == 1:
-                    return _node.type
-                if index.column() == 2:
                     return _node.animation_range
+        if role == QtCore.Qt.EditRole:
+            _node = index.internalPointer()
+            if _node != self.root_node:
+                if index.column() == 0:
+                    return _node.unique_name
 
         return None
 
@@ -410,33 +416,33 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             return self.createIndex(row, column, _node)
         return QtCore.QModelIndex()
 
-    # def headerData(self, section, orientation, role=None):
-    #     """
-    #     Returns the header data for the given index and role
-    #
-    #     Parameters
-    #     ----------
-    #     section : int
-    #         The index to get header data for.
-    #     orientation : QtCore.Qt.Orientation
-    #         The orientation of the header to get data for.
-    #     role : QtCore.Qt.Role
-    #         The role to get header data for.
-    #
-    #     Returns
-    #     -------
-    #     object
-    #         The header data for the given header index and row
-    #
-    #     """
-    #     if role != QtCore.Qt.DisplayRole or orientation == QtCore.Qt.Vertical:
-    #         return None
-    #     else:
-    #         if section >= self.columnCount():
-    #             return None
-    #         else:
-    #             _text = self.header_for_column(section)
-    #         return _text
+    def headerData(self, section, orientation, role=None):
+        """
+        Returns the header data for the given index and role
+
+        Parameters
+        ----------
+        section : int
+            The index to get header data for.
+        orientation : QtCore.Qt.Orientation
+            The orientation of the header to get data for.
+        role : QtCore.Qt.Role
+            The role to get header data for.
+
+        Returns
+        -------
+        object
+            The header data for the given header index and row
+
+        """
+        if role != QtCore.Qt.DisplayRole or orientation == QtCore.Qt.Vertical:
+            return None
+        else:
+            if section >= self.columnCount():
+                return None
+            else:
+                _text = self.header_for_column(section)
+            return _text
 
 
 class Selection_Table_Model(QtCore.QAbstractItemModel):
@@ -653,7 +659,7 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
         _model = self.model()
 
         _current_index = self.selectionModel().currentIndex()
-        _data = _model.data(_model.index( _current_index.row(), 0, _model.parent(_current_index)), role=QtCore.Qt.DisplayRole)
+        _data = _model.data(_model.index( _current_index.row(), 0, _model.parent(_current_index)), role=QtCore.Qt.EditRole)
         self.SelectionChanged.emit(_data)
 
     def current_selection(self):

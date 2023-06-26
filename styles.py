@@ -11,6 +11,9 @@ def process_stylesheet(stylesheet, variables):
 
 variables = {
     "@maya_button_background;": "#5d5d5d;",
+    "@maya_button_hover;": "#707070;",
+    "@maya_button_clicked;": "#1d1d1d;",
+
     "@maya_widget;": "#444444;",
     "@maya_white_text;": "#b2b2ab;",
     "@maya_outliner_background;": "#373737;",
@@ -50,3 +53,5 @@ maya_splitter = get_stylesheet("maya_splitter.qss")
 maya_expanded_collapsible_layout = get_stylesheet("maya_expanded_collapsible_layout.qss")
 maya_collapsed_layout = get_stylesheet("maya_collapsed_layout.qss")
 maya_tab_widget = get_stylesheet("maya_tab_widget.qss")
+maya_menu_bar = get_stylesheet("maya_menu_bar.qss")
+queue_view = get_stylesheet("export_queue.qss")
