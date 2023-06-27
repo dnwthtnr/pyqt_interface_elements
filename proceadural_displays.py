@@ -7,7 +7,8 @@ from pyqt_interface_elements import (
     base_widgets,
     icons,
     line_edits,
-    text_edit
+    text_edit,
+    labels
 )
 
 
@@ -123,6 +124,26 @@ class LargeListAttributeEditor(AbstractAttributeEntry):
 
     def attribute_editor(self, attribute_value):
         _widget = text_edit.LargeListDisplay(_list=attribute_value)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        return attribute_editor.list()
+
+    def identifier(self, value):
+        if not isinstance(value, list):
+            return False
+        if len(value) < 0:
+            return False
+
+        return True
+
+class LargeListTooltipAttributeEditor(AbstractAttributeEntry):
+
+    def __int__(self, attribute_name, attribute_value):
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = line_edits.ListToolTipDisplay(_list=attribute_value)
         return _widget
 
     def attribute_editor_value(self, attribute_editor):
