@@ -41,3 +41,9 @@ class MenuBar(QtWidgets.QMenuBar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class CheckBox(QtWidgets.QCheckBox):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

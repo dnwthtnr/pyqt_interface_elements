@@ -75,6 +75,9 @@ class Layout(QtWidgets.QWidget):
 
             self.children = []
 
+    def childCount(self):
+        return len(self.children)
+
     def disown_child(self, child_widget):
         child_widget.setParent(None)
         del child_widget
