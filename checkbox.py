@@ -1,6 +1,17 @@
-from pyqt_interface_elements import base_layouts, base_widgets, line_edits
+from pyqt_interface_elements import base_layouts, base_widgets, line_edits, buttons
 
 #TODO: finish range selection
+
+
+class TwoDimensionalCheckBox(base_layouts.Horizontal_Layout):
+
+    def __init__(self, range):
+        super().__init__()
+
+        self.checkbox = buttons.ToggleIconButton(enabled_icon=, disabled_icon=)
+        self.
+
+
 
 class CustomFromRangesCheckbox(base_layouts.Vertical_Layout):
 
