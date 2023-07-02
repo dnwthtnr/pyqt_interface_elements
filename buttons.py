@@ -1,6 +1,9 @@
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 from pyqt_interface_elements import base_widgets
 from PySide2 import QtCore
-
 
 class ToggleIconButton(base_widgets.Tool_Button):
     enabled = QtCore.Signal()
@@ -13,8 +16,8 @@ class ToggleIconButton(base_widgets.Tool_Button):
         self.disabled_icon = disabled_icon
         print(self.enabled_icon, self.disabled_icon)
 
-        self.setIcon(self.enabled_icon)
-        self._enabled = True
+        self.setIcon(self.disabled_icon)
+        self._enabled = False
         self.clicked.connect(self.toggleIcon)
 
     @property
@@ -26,14 +29,13 @@ class ToggleIconButton(base_widgets.Tool_Button):
         self._enabled = value
 
     def toggleIcon(self):
-        print('toggle', self.enabledState)
+        logger.debug(f'Button {self.__class__.__name__} toggling. Current State: {self.enabledState}')
         if self.enabledState is True:
             self.setIconState(False)
         else:
             self.setIconState(True)
 
     def setIconState(self, enabled):
-        print('state', enabled)
         if enabled is False:
             self.setIcon(self.disabled_icon)
             self.enabledState = False

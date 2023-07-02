@@ -8,5 +8,9 @@ def get_icon(file_name):
 
 open_file = get_icon("open_file.svg")
 close = get_icon("close.svg")
+
 down_arrow = get_icon("down_arrow.svg")
 up_arrow = get_icon("up_arrow.svg")
+
+checkbox_checked = get_icon("checkbox_checked.svg")
+checkbox_unchecked = get_icon("checkbox_unchecked.svg")
