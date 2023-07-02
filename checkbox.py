@@ -22,6 +22,8 @@ class CustomFromRangesCheckbox(base_layouts.Vertical_Layout):
     def __init__(self, ranges_list, row_max=4):
         super().__init__()
 
+        self.editors = []
+
         _row = base_layouts.Horizontal_Layout()
         for _range_list in ranges_list:
             _x_val = _range_list[0]
@@ -29,6 +31,7 @@ class CustomFromRangesCheckbox(base_layouts.Vertical_Layout):
             # _range_editor = line_edits.TwoDimensionalFloat(_x_val, _y_val)
             _range_editor = TwoDimensionalCheckBox(range=_range_list)
             _row.addWidget(_range_editor)
+            self.editors.append(_range_editor)
             if _row.childCount() == 4:
                 self.addWidget(_row)
                 _row = base_layouts.Horizontal_Layout()
