@@ -8,8 +8,8 @@ from pyqt_interface_elements import base_layouts, base_widgets, line_edits, butt
 from PySide2 import QtWidgets, QtCore
 from functools import partial
 
-#TODO: finish range selection
-
+# TODO: finish range selection
+# TODO: fix how custom range is added to range array
 
 class Checkbox(buttons.ToggleIconButton):
     checked = QtCore.Signal()
