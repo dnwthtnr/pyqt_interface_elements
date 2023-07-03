@@ -114,6 +114,9 @@ class RangeCheckboxArray(base_layouts.Vertical_Layout):
         self.editors = []
         self.checkbox_manager = CheckboxManager()
 
+
+        # TODO: SIMPLIFY -- Break this shit up
+
         _row = base_layouts.Horizontal_Layout(spacing=spacing)
         _row.addStretch(1)
 
