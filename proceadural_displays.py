@@ -8,7 +8,8 @@ from pyqt_interface_elements import (
     icons,
     line_edits,
     text_edit,
-    labels
+    labels,
+    checkbox
 )
 
 
@@ -155,6 +156,11 @@ class LargeListTooltipAttributeEditor(AbstractAttributeEntry):
         if len(value) < 0:
             return False
 
+        # check if all contents are lists
+        _contents_list = [isinstance(_item, list) for _item in value]
+        if True in _contents_list:
+            return False
+
         return True
 
 class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
@@ -178,6 +184,51 @@ class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
             return False
         else:
             return True
+
+class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
+
+    def __int__(self, attribute_name, attribute_value):
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = checkbox.RangeCheckboxArray(ranges_list=attribute_value)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        """
+
+        Parameters
+        ----------
+        attribute_editor
+
+        Returns
+        -------
+        list[list]
+
+        """
+        return attribute_editor.checked_ranges()
+
+    def identifier(self, value):
+        if not isinstance(value, list):
+            return False
+
+        # check if all contents are lists
+        _contents_list = [isinstance(_item, list) for _item in value]
+        if False in _contents_list:
+            return False
+
+        # check if all lists are of length 2
+        _contents_all_ranges = [len(_item) == 2 for _item in value]
+        if False in _contents_all_ranges:
+            return False
+
+        # check if all lists hold 2 ints
+        for _item in value:
+            _item_type_pair = [type(_item[0]), type(_item[1])]
+            if _item_type_pair != [float, float] and _item_type_pair != [int, int]:
+                return False
+
+        return True
 
 
 class AbstractEntryHolder(base_layouts.Vertical_Layout):

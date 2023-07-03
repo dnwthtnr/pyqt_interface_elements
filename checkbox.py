@@ -1,3 +1,5 @@
+import time
+
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -40,6 +42,9 @@ class TwoDimensionalCheckBox(CheckBoxLayout):
         super().__init__()
         self.two_dimensional_editor = line_edits.TwoDimensionalFloat(x_val=range[0], y_val=range[1])
         self.addWidget(self.two_dimensional_editor)
+
+    def value(self):
+        return self.two_dimensional_editor.value
 
 
 class CheckboxManager(QtCore.QObject):
@@ -101,32 +106,51 @@ class CheckboxManager(QtCore.QObject):
         self.checked.pop(_checkbox_index)
 
 
-class CustomFromRangesCheckbox(base_layouts.Vertical_Layout):
+class RangeCheckboxArray(base_layouts.Vertical_Layout):
 
-    def __init__(self, ranges_list, row_max=6):
-        super().__init__()
+    def __init__(self, ranges_list, custom_range_box=True, spacing=0, checkbox_spacing=15, checkbox_width=0, row_max=4):
+        super().__init__(spacing=spacing)
 
         self.editors = []
-        checkbox_manager = CheckboxManager()
+        self.checkbox_manager = CheckboxManager()
 
-        _row = base_layouts.Horizontal_Layout()
+        _row = base_layouts.Horizontal_Layout(spacing=spacing)
+        _row.addStretch(1)
+
+        if custom_range_box is True:
+            ranges_list.insert(-1, [])
         for _range_list in ranges_list:
-            _range_editor = TwoDimensionalCheckBox(range=_range_list)
-            checkbox_manager.addCheckBox(
+            if _range_list == []:
+                _range_list = [0, 0]
+                _range_editor = TwoDimensionalCheckBox(range=_range_list)
+                _custom_range_label = base_widgets.Label(text="Custom Range")
+                _range_editor.insertWidget(1, _custom_range_label)
+            else:
+                _range_editor = TwoDimensionalCheckBox(range=_range_list)
+
+            if checkbox_width > 0:
+                _range_editor.setFixedWidth(checkbox_width)
+
+            self.checkbox_manager.addCheckBox(
                 checkbox_instance=_range_editor,
                 checkbox_unchecked_signal=_range_editor.unchecked,
                 checkbox_checked_signal=_range_editor.checked,
                 uncheck_checkbox_callable=partial(_range_editor.setChecked, False)
             )
-            # _range_editor.checked.connect(partial(checkbox_manager.checkboxChecked, _range_editor))
-            # _range_editor.unchecked.connect(partial(checkbox_manager.checkboxUnchecked, _range_editor))
 
             _row.addWidget(_range_editor)
             self.editors.append(_range_editor)
             if _row.childCount() == row_max:
                 self.addWidget(_row)
-                _row = base_layouts.Horizontal_Layout()
+                _row = base_layouts.Horizontal_Layout(spacing=spacing)
+                _row.addStretch(1)
+
         self.addWidget(_row)
+
+    def checked_ranges(self):
+        _selected_ranges = [_checkbox.value() for _checkbox in self.checkbox_manager.currentlyChecked()]
+        logger.debug(f'Selected ranges: {_selected_ranges}')
+        return _selected_ranges
 
 if __name__ == "__main__":
     import sys
@@ -134,7 +158,7 @@ if __name__ == "__main__":
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _window = CustomFromRangesCheckbox(ranges_list=[
+        _window = RangeCheckboxArray(ranges_list=[
             [10, 200],
             [10, 200],
             [10, 200],
@@ -149,6 +173,8 @@ if __name__ == "__main__":
             [10, 200]
         ])
         _window.show()
+
+        _window.checked_ranges()
     except Exception as e:
         print(e)
 

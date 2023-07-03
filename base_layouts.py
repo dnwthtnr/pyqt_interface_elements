@@ -9,6 +9,8 @@ class Layout(QtWidgets.QWidget):
         super().__init__(*args, **kwargs)
         self._layout = QtWidgets.QVBoxLayout() if layout_orientation == constants.vertical else QtWidgets.QHBoxLayout()
 
+        self.stretch = False
+
         self.layout.setContentsMargins(
             margins[0],
             margins[1],
@@ -41,8 +43,13 @@ class Layout(QtWidgets.QWidget):
 
     def addStretch(self, stretch):
         self.layout.addStretch(stretch)
+        self.stretch = True
 
     def addWidget(self, widget, *args, **kwargs):
+        if self.stretch is True:
+            self.insertWidget(0, widget)
+            self.children.append(widget)
+            return
         self.layout.addWidget(widget, *args, **kwargs)
         self.children.append(widget)
 
@@ -133,10 +140,10 @@ class ExpandWhenClicked(Horizontal_Layout):
         self.addWidget(_bar_layout)
 
     def build_dropdown_button(self):
-        _dropdown = buttons.ToggleIconButton(enabled_icon=icons.up_arrow, disabled_icon=icons.down_arrow)
+        _dropdown = buttons.ToggleIconButton(enabled_icon=icons.down_arrow, disabled_icon=icons.up_arrow)
         _dropdown.setStyleSheet("background-color: transparent; border: none;")
-        _dropdown.enabled.connect(partial(self.setExpandedState, False))
-        _dropdown.disabled.connect(partial(self.setExpandedState, True))
+        _dropdown.enabled.connect(partial(self.setExpandedState, True))
+        _dropdown.disabled.connect(partial(self.setExpandedState, False))
         return _dropdown
 
     def build_collapsed(self):
