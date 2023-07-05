@@ -71,6 +71,8 @@ class DropdownBar(base_layouts.HorizontalLayout):
         self.dropdownClicked.emit(self.dropdown_button.enabledState)
 
 
+
+# TODO: Add ability for adding stuff to dropdown layout and get a better window flag behavior for the appearence of the dropdown layout
 class Dropdown(DropdownBar):
 
     def __init__(self):
