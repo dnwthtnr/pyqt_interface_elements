@@ -8,6 +8,7 @@ def get_icon(file_name):
 
 open_file = get_icon("open_file.svg")
 close = get_icon("close.svg")
+save = get_icon("save.svg")
 
 down_arrow = get_icon("down_arrow.svg")
 up_arrow = get_icon("up_arrow.svg")

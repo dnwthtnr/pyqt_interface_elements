@@ -40,7 +40,7 @@ if __name__ == "__main__":
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _window = base_layouts.Vertical_Layout()
+        _window = base_layouts.VerticalLayout()
 
         _icons = LoadingRing()
         _window.addWidget(_icons)

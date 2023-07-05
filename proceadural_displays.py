@@ -13,7 +13,7 @@ from pyqt_interface_elements import (
 )
 
 
-class AbstractAttributeEntry(base_layouts.Horizontal_Layout):
+class AbstractAttributeEntry(base_layouts.HorizontalLayout):
     valueEdited = QtCore.Signal(object)
 
     def __init__(self, attribute_name, attribute_value):
@@ -231,7 +231,7 @@ class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
         return True
 
 
-class AbstractEntryHolder(base_layouts.Vertical_Layout):
+class AbstractEntryHolder(base_layouts.VerticalLayout):
 
     def __init__(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type=True, attribute_title_width=150, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(margins, spacing)

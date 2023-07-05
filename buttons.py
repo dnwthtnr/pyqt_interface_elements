@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-from pyqt_interface_elements import base_widgets
+from pyqt_interface_elements import base_widgets, icons
 from PySide2 import QtCore
 
 class ToggleIconButton(base_widgets.Tool_Button):
@@ -46,4 +46,10 @@ class ToggleIconButton(base_widgets.Tool_Button):
             self.enabled.emit()
 
 
+class DropdownToggleButton(ToggleIconButton):
+
+    def __init__(self):
+        super().__init__(enabled_icon=icons.down_arrow, disabled_icon=icons.up_arrow)
+
+        self.setStyleSheet("background-color: transparent; border: none;")
 

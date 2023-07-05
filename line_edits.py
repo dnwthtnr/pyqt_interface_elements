@@ -37,7 +37,7 @@ class IntLineEdit(base_widgets.Line_Edit):
         self.setText(str(value))
 
 
-class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
+class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
     FileSelected = QtCore.Signal(str)
     textEdited = QtCore.Signal(str)
 
@@ -84,7 +84,7 @@ class File_Selection_Line_Edit(base_layouts.Horizontal_Layout):
         self.FileSelected.emit(_selected_file)
 
 
-class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
+class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
     FileSelected = QtCore.Signal(str)
     textEdited = QtCore.Signal(str)
 
@@ -131,15 +131,19 @@ class Folder_Selection_Line_Edit(base_layouts.Horizontal_Layout):
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
 
-class TwoDimensionalFloat(base_layouts.Horizontal_Layout):
+
+class TwoDimensionalFloat(base_layouts.HorizontalLayout):
     valueChanged = QtCore.Signal(list)
 
     def __init__(self, x_val, y_val, seperator="-", *args, **kwargs):
         super().__init__(spacing=5, *args, **kwargs)
 
         self.x_line = FloatLineEdit(value=x_val)
+        self.x_line.setAlignment(constants.align_left)
         self.x_line.textEdited.connect(self.emit_value_changed)
+
         self.y_line = FloatLineEdit(value=y_val)
+        self.y_line.setAlignment(constants.align_left)
         self.y_line.textEdited.connect(self.emit_value_changed)
 
         self.seperator = base_widgets.Label(text=seperator)

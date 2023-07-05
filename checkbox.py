@@ -23,7 +23,7 @@ class Checkbox(buttons.ToggleIconButton):
         self.disabled.connect(self.unchecked.emit)
 
 
-class CheckBoxLayout(base_layouts.Horizontal_Layout):
+class CheckBoxLayout(base_layouts.HorizontalLayout):
     checked = QtCore.Signal()
     unchecked = QtCore.Signal()
 
@@ -108,7 +108,7 @@ class CheckboxManager(QtCore.QObject):
         self.checked.pop(_checkbox_index)
 
 
-class RangeCheckboxArray(base_layouts.Vertical_Layout):
+class RangeCheckboxArray(base_layouts.VerticalLayout):
 
     def __init__(self, ranges_list, custom_range_box=True, spacing=0, checkbox_spacing=15, checkbox_width=0, row_max=4):
         super().__init__(spacing=spacing)
@@ -119,7 +119,7 @@ class RangeCheckboxArray(base_layouts.Vertical_Layout):
 
         # TODO: SIMPLIFY -- Break this shit up
 
-        _row = base_layouts.Horizontal_Layout(spacing=spacing)
+        _row = base_layouts.HorizontalLayout(spacing=spacing)
         _row.addStretch(1)
 
         if custom_range_box is True:
@@ -147,7 +147,7 @@ class RangeCheckboxArray(base_layouts.Vertical_Layout):
             self.editors.append(_range_editor)
             if _row.childCount() == row_max:
                 self.addWidget(_row)
-                _row = base_layouts.Horizontal_Layout(spacing=spacing)
+                _row = base_layouts.HorizontalLayout(spacing=spacing)
                 _row.addStretch(1)
 
         self.addWidget(_row)

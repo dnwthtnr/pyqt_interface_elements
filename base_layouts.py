@@ -36,7 +36,6 @@ class Layout(QtWidgets.QWidget):
 
         super().paintEvent(event)
 
-
     @property
     def layout(self):
         return self._layout
@@ -92,13 +91,86 @@ class Layout(QtWidgets.QWidget):
         # self.children.pop(_index)
 
 
-class Vertical_Layout(Layout):
+class VerticalLayout(Layout):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(layout_orientation=constants.vertical, margins=margins, spacing=spacing)
 
 
-class Horizontal_Layout(Layout):
+class HorizontalLayout(Layout):
+
+    def __init__(self, margins=[0, 0, 0, 0], spacing=0):
+        super().__init__(layout_orientation=constants.horizontal, margins=margins, spacing=spacing)
+
+
+class ScrollArea(QtWidgets.QScrollArea):
+
+    # def __getattr__(self, item):
+    #
+    #     if hasattr(self.layout, item):
+    #         # _attr = getattr(self.layout, item)
+    #         return getattr(self.layout, item)
+    #     else:
+    #         raise AttributeError(f'Class {self.__class__.__name__} does not have attribute: {item}')
+
+    def __init__(self, layout_orientation, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
+        super().__init__()
+        self._layout = Layout(
+            layout_orientation=layout_orientation,
+            margins=margins,
+            spacing=spacing,
+            *args,
+            **kwargs
+        )
+
+        self.setWidget(self.layout)
+        self.setWidgetResizable(True)
+
+    @property
+    def layout(self):
+        return self._layout
+
+    def addStretch(self, stretch):
+        self.layout.addStretch(stretch)
+
+    def addWidget(self, widget, *args, **kwargs):
+        self.layout.addWidget(widget, *args, **kwargs)
+
+    def addWidgets(self, widgets, *args, **kwargs):
+        self.layout.addWidgets(widgets, *args, **kwargs)
+
+    def insertWidget(self, index, widget):
+        self.layout.insertWidget(index, widget)
+
+    def addSpacerItem(self, spaceritem):
+        self.layout.addSpacerItem(spaceritem)
+
+    def insertSpacerItem(self, index, spaceritem):
+        self.layout.insertSpacerItem(index, spaceritem)
+
+    def clearAndAddWidget(self, widget, *args, **kwargs):
+        self.layout.clearAndAddWidget(widget, *args, **kwargs)
+
+    def clearAndAddWidgets(self, widgets, *args, **kwargs):
+        self.layout.clearAndAddWidgets( widgets, *args, **kwargs)
+
+    def clear_layout(self):
+        self.layout.clear_layout()
+
+    def childCount(self):
+        self.layout.childCount()
+
+    def disown_child(self, child_widget):
+        self.layout.disown_child(child_widget)
+
+
+class VerticalScrollArea(ScrollArea):
+
+    def __init__(self, margins=[0, 0, 0, 0], spacing=0):
+        super().__init__(layout_orientation=constants.vertical, margins=margins, spacing=spacing)
+
+
+class HorizontalScrollArea(ScrollArea):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(layout_orientation=constants.horizontal, margins=margins, spacing=spacing)
@@ -116,7 +188,7 @@ class TabWidget(QtWidgets.QTabWidget):
         super().__init__(*args, **kwargs)
 
 
-class ExpandWhenClicked(Horizontal_Layout):
+class ExpandWhenClicked(HorizontalLayout):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
         super().__init__(margins=margins, spacing=spacing, *args, **kwargs)
@@ -128,11 +200,11 @@ class ExpandWhenClicked(Horizontal_Layout):
 
 
 
-        _layouts = Vertical_Layout()
+        _layouts = VerticalLayout()
         _layouts.addWidget(self.collapsed_layout, alignment=constants.align_top)
         _layouts.addWidget(self.expanded_layout)
 
-        _bar_layout = Horizontal_Layout()
+        _bar_layout = HorizontalLayout()
         _bar_layout.addWidget(self.dropdown, alignment=constants.align_left | constants.align_top)
         _bar_layout.addWidget(_layouts)
 
@@ -148,12 +220,12 @@ class ExpandWhenClicked(Horizontal_Layout):
 
     def build_collapsed(self):
 
-        _layout = Horizontal_Layout()
+        _layout = HorizontalLayout()
 
         return _layout
 
     def build_expanded(self, margins, spacing):
-        _layout = Vertical_Layout(margins=margins, spacing=spacing)
+        _layout = VerticalLayout(margins=margins, spacing=spacing)
         _layout.hide()
         return _layout
 
