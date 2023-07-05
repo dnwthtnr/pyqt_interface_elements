@@ -11,6 +11,8 @@ from functools import partial
 # TODO: finish range selection
 # TODO: fix how custom range is added to range array
 
+# TODO: polish and add ability to add new custom ranges
+
 class Checkbox(buttons.ToggleIconButton):
     checked = QtCore.Signal()
     unchecked = QtCore.Signal()
