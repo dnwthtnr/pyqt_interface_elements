@@ -91,6 +91,32 @@ class Layout(QtWidgets.QWidget):
         # self.children.pop(_index)
 
 
+    def get_child_at_position(self, localPoint):
+        """
+        If there is one will return the layouts child widget containing the given point
+
+        Parameters
+        ----------
+        localPoint : QtCore.QPointF
+            The point
+
+        Returns
+        -------
+        QtWidgets.QObject or None
+            The child object or None if there isnt one at the given point
+
+        """
+        if self.childCount() == 0:
+            return None
+
+        for _child in self.children:
+            _child_geometry = _child.geometry()
+            if _child_geometry.contains(localPoint.x(), localPoint.y()):
+                return _child
+
+        return None
+
+
 class VerticalLayout(Layout):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0):
@@ -158,10 +184,13 @@ class ScrollArea(QtWidgets.QScrollArea):
         self.layout.clear_layout()
 
     def childCount(self):
-        self.layout.childCount()
+        return self.layout.childCount()
 
     def disown_child(self, child_widget):
         self.layout.disown_child(child_widget)
+
+    def get_child_at_position(self, localPoint):
+        return self.layout.get_child_at_position(localPoint)
 
 
 class VerticalScrollArea(ScrollArea):

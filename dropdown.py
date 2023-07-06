@@ -10,10 +10,31 @@ logger.setLevel(logging.NOTSET)
 
 
 class DropdownLayout(base_layouts.VerticalScrollArea):
+    childClicked = QtCore.Signal(QtCore.QObject)
     
     def __init__(self, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(margins=margins, spacing=spacing)
         self.setWindowFlags(QtCore.Qt.Popup)
+
+    def mouseReleaseEvent(self, event):
+        print('release')
+        _mouse_button = event.button()
+        if _mouse_button == QtCore.Qt.LeftButton:
+            _mouse_position_LOCAL = event.localPos()
+            _child_widget_at_point = self.get_child_at_position(_mouse_position_LOCAL)
+            if _child_widget_at_point is None:
+                print(f'it was none', _mouse_position_LOCAL)
+                return super().mouseReleaseEvent(event)
+            else:
+                self.childWidgetClicked(_child_widget_at_point)
+                pass
+
+        return super().mouseReleaseEvent(event)
+
+    def childWidgetClicked(self, widget):
+        logger.debug(f'Child widget clicked in class: {self.__class__.__name__}. Name: {widget}')
+        self.childClicked.emit(widget)
+
 
 
 
@@ -77,14 +98,14 @@ class Dropdown(DropdownBar):
 
     def __init__(self):
         super().__init__()
-        self.dropdownClicked.connect(self.dropdown)
+        self.dropdownClicked.connect(self._dropdown_state_changed)
         self.dropdown_layout = DropdownLayout()
         _label = base_widgets.Label(text='asdasd')
         self.dropdown_layout.addWidget(_label)
 
-    def dropdown(self, dropState):
+    @QtCore.Slot()
+    def _dropdown_state_changed(self, dropState):
         if dropState is True:
-            # dropped
             self.show_dropdown()
         else:
             self.dropdown_layout.hide()
@@ -93,6 +114,9 @@ class Dropdown(DropdownBar):
         self.dropdown_layout.show()
         _point = self.bottom_left_global_point()
         self.dropdown_layout.move(_point)
+
+    def addDropdownItem(self, widget, *args, **kwargs):
+        self.dropdown_layout.addWidget(widget, *args, **kwargs)
 
 
 
