@@ -22,18 +22,17 @@ class DropdownLayout(base_layouts.VerticalScrollArea):
         if _mouse_button == QtCore.Qt.LeftButton:
             _mouse_position_LOCAL = event.localPos()
             _child_widget_at_point = self.get_child_at_position(_mouse_position_LOCAL)
-            if _child_widget_at_point is None:
-                print(f'it was none', _mouse_position_LOCAL)
-                return super().mouseReleaseEvent(event)
-            else:
-                self.childWidgetClicked(_child_widget_at_point)
-                pass
+            self.childWidgetClicked(_child_widget_at_point)
+            pass
 
         return super().mouseReleaseEvent(event)
 
     def childWidgetClicked(self, widget):
         logger.debug(f'Child widget clicked in class: {self.__class__.__name__}. Name: {widget}')
-        self.childClicked.emit(widget)
+        # TODO: make it so that if widget is None, deselect any selected stuff
+        if not None:
+            self.childClicked.emit(widget)
+
 
 
 
