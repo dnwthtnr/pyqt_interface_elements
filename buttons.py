@@ -8,6 +8,7 @@ from PySide2 import QtCore
 class ToggleIconButton(base_widgets.Tool_Button):
     enabled = QtCore.Signal()
     disabled = QtCore.Signal()
+    toggleStateChanged = QtCore.Signal(bool)
 
 
     def __init__(self, enabled_icon, disabled_icon):
@@ -44,6 +45,8 @@ class ToggleIconButton(base_widgets.Tool_Button):
             self.setIcon(self.enabled_icon)
             self.enabledState = True
             self.enabled.emit()
+
+        self.toggleStateChanged.emit(enabled)
 
 
 class DropdownToggleButton(ToggleIconButton):

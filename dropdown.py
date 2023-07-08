@@ -10,11 +10,22 @@ logger.setLevel(logging.NOTSET)
 
 
 class DropdownLayout(base_layouts.VerticalScrollArea):
-    childClicked = QtCore.Signal(QtCore.QObject)
+    childClicked = QtCore.Signal(object)
+    escapeClicked = QtCore.Signal()
     
-    def __init__(self, margins=[0, 0, 0, 0], spacing=0):
+    def __init__(self, close_on_escape=False, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(margins=margins, spacing=spacing)
+        self.close_on_escape = close_on_escape
         self.setWindowFlags(QtCore.Qt.Popup)
+
+    def keyPressEvent(self, event):
+        _key = event.key()
+        if _key == QtCore.Qt.Key_Escape:
+            if self.close_on_escape is False:
+                self.escapeClicked.emit()
+            else:
+                self.hide()
+        super().keyPressEvent(event)
 
     def mouseReleaseEvent(self, event):
         print('release')
@@ -72,7 +83,6 @@ class DropdownBar(base_layouts.HorizontalLayout):
     # region Label
     def _build_label(self):
         _label = base_widgets.Line_Edit()
-
         return _label
 
     def setText(self, text):
@@ -82,13 +92,16 @@ class DropdownBar(base_layouts.HorizontalLayout):
 
     def _build_button(self):
         _button = buttons.DropdownToggleButton()
-        _button.clicked.connect(self._emit_dropdown_clicked)
-
+        _button.toggleStateChanged.connect(self._emit_dropdown_clicked)
         return _button
 
+    def setDropdownState(self, enabled):
+        logger.debug(f'Setting dropdown state to: {enabled}')
+        self.dropdown_button.setIconState(enabled)
+
     @QtCore.Slot()
-    def _emit_dropdown_clicked(self):
-        self.dropdownClicked.emit(self.dropdown_button.enabledState)
+    def _emit_dropdown_clicked(self, enabled):
+        self.dropdownClicked.emit(enabled)
 
 
 
@@ -97,10 +110,24 @@ class Dropdown(DropdownBar):
 
     def __init__(self):
         super().__init__()
+        self.dropdown_items = {}
         self.dropdownClicked.connect(self._dropdown_state_changed)
-        self.dropdown_layout = DropdownLayout()
-        _label = base_widgets.Label(text='asdasd')
-        self.dropdown_layout.addWidget(_label)
+        self.dropdown_layout = self._build_dropdown_layout()
+
+    @QtCore.Slot()
+    def setCurrentItem(self, widget):
+        _widget_display_attribute = self.dropdown_items.get(widget)
+        _attr = getattr(widget, _widget_display_attribute)
+        _text = eval(f"widget.{_widget_display_attribute}()")
+
+        print(_text)
+        self.setText(_attr)
+
+    def _build_dropdown_layout(self):
+        _widget = DropdownLayout()
+        _widget.childClicked.connect(self.setCurrentItem)
+        _widget.escapeClicked.connect(partial(self.setDropdownState, False))
+        return _widget
 
     @QtCore.Slot()
     def _dropdown_state_changed(self, dropState):
@@ -114,8 +141,9 @@ class Dropdown(DropdownBar):
         _point = self.bottom_left_global_point()
         self.dropdown_layout.move(_point)
 
-    def addDropdownItem(self, widget, *args, **kwargs):
+    def addDropdownItem(self, widget, widget_display_attribute, *args, **kwargs):
         self.dropdown_layout.addWidget(widget, *args, **kwargs)
+        self.dropdown_items[widget] = widget_display_attribute
 
 
 
@@ -131,6 +159,9 @@ if __name__ == "__main__":
 
     try:
         _window = Dropdown()
+
+        _label = base_widgets.Label(text='asdasd')
+        _window.addDropdownItem(_label, "text")
 
         _window.show()
     except Exception as e:
