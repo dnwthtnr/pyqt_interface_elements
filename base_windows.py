@@ -10,3 +10,10 @@ class File_Dialogue(QtWidgets.QFileDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class Dialog(QtWidgets.QDialog):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+

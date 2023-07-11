@@ -192,6 +192,9 @@ class ScrollArea(QtWidgets.QScrollArea):
     def get_child_at_position(self, localPoint):
         return self.layout.get_child_at_position(localPoint)
 
+    def children(self):
+        return self.layout.children
+
 
 class VerticalScrollArea(ScrollArea):
 

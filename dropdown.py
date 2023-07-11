@@ -107,6 +107,7 @@ class DropdownBar(base_layouts.HorizontalLayout):
 
 # TODO: Add ability for adding stuff to dropdown layout and get a better window flag behavior for the appearence of the dropdown layout
 class Dropdown(DropdownBar):
+    currentTextChanged = QtCore.Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -117,11 +118,11 @@ class Dropdown(DropdownBar):
     @QtCore.Slot()
     def setCurrentItem(self, widget):
         _widget_display_attribute = self.dropdown_items.get(widget)
-        _attr = getattr(widget, _widget_display_attribute)
-        _text = eval(f"widget.{_widget_display_attribute}()")
-
+        _text = _widget_display_attribute()
         print(_text)
-        self.setText(_attr)
+        self.setText(_text)
+        self.setDropdownState(False)
+        self.currentTextChanged.emit(_text)
 
     def _build_dropdown_layout(self):
         _widget = DropdownLayout()
@@ -141,9 +142,26 @@ class Dropdown(DropdownBar):
         _point = self.bottom_left_global_point()
         self.dropdown_layout.move(_point)
 
-    def addDropdownItem(self, widget, widget_display_attribute, *args, **kwargs):
+    def addDropdownItem(self, widget, widget_text_callable, *args, **kwargs):
         self.dropdown_layout.addWidget(widget, *args, **kwargs)
-        self.dropdown_items[widget] = widget_display_attribute
+        self.dropdown_items[widget] = widget_text_callable
+
+    def addDropdownItems(self, widget, widget_text_callable, *args, **kwargs):
+        self.dropdown_layout.addWidget(widget, *args, **kwargs)
+        self.dropdown_items[widget] = widget_text_callable
+
+    def setCurrentIndex(self, index):
+        _widget = self.dropdown_layout.children()[index]
+        print(_widget)
+        _widget_data_callable = self.dropdown_items[_widget]
+        _text = _widget_data_callable()
+        self.setText(_text)
+
+
+    def clear(self):
+        self.setText('')
+        self.dropdown_layout.clear_layout()
+        self.dropdown_items = {}
 
 
 
@@ -161,7 +179,11 @@ if __name__ == "__main__":
         _window = Dropdown()
 
         _label = base_widgets.Label(text='asdasd')
-        _window.addDropdownItem(_label, "text")
+        _label1 = base_widgets.Label(text='dfgd')
+        _label2 = base_widgets.Label(text='jhjj')
+        _window.addDropdownItem(_label, partial(_label.text))
+        _window.addDropdownItem(_label1, partial(_label1.text))
+        _window.addDropdownItem(_label2, partial(_label2.text))
 
         _window.show()
     except Exception as e:
