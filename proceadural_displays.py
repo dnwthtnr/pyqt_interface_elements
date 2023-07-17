@@ -157,9 +157,12 @@ class LargeListTooltipAttributeEditor(AbstractAttributeEntry):
             return False
 
         # check if all contents are lists
-        _contents_list = [isinstance(_item, list) for _item in value]
-        if True in _contents_list:
+        _contents_list = [isinstance(_item, str) for _item in value]
+        if False in _contents_list:
             return False
+
+
+
 
         return True
 

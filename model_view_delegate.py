@@ -192,6 +192,8 @@ class Node:
         self.animation_range = node_data_dictionary.get("Absolute Animation Range", "")
         self.type = node_data_dictionary.get("Type", "")
 
+        self.data_dictionary = node_data_dictionary
+
         self.parent_node = None
         self.child_nodes = []
         self.display_name = self.unique_name.split("|")[-1]
