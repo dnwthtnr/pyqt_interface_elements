@@ -26,12 +26,15 @@ class Checkbox(buttons.ToggleIconButton):
 class CheckBoxLayout(base_layouts.HorizontalLayout):
     checked = QtCore.Signal()
     unchecked = QtCore.Signal()
+    stateChanged = QtCore.Signal()
 
     def __init__(self):
         super().__init__()
         self.checkbox = Checkbox()
         self.checkbox.checked.connect(self.checked.emit)
         self.checkbox.unchecked.connect(self.unchecked.emit)
+        self.checkbox.checked.connect(self.stateChanged.emit)
+        self.checkbox.unchecked.connect(self.stateChanged.emit)
         self.addWidget(self.checkbox)
 
     def setChecked(self, checked):
@@ -50,6 +53,7 @@ class TwoDimensionalCheckBox(CheckBoxLayout):
 
 
 class CheckboxManager(QtCore.QObject):
+    selectionChanged = QtCore.Signal()
 
     def __init__(self, allowed_checked_limit=5):
         super().__init__()
@@ -88,7 +92,13 @@ class CheckboxManager(QtCore.QObject):
 
         """
         checkbox_checked_signal.connect(partial(self.checkboxChecked, checkbox_instance))
+        checkbox_checked_signal.connect(self.selectionChanged.emit)
+
         checkbox_unchecked_signal.connect(partial(self.checkboxUnchecked, checkbox_instance))
+        checkbox_unchecked_signal.connect(self.selectionChanged.emit)
+
+
+
         self.checkboxes[checkbox_instance] = uncheck_checkbox_callable
 
     @QtCore.Slot()
@@ -109,12 +119,14 @@ class CheckboxManager(QtCore.QObject):
 
 
 class RangeCheckboxArray(base_layouts.VerticalLayout):
+    rangeSelectionChanged = QtCore.Signal(list)
 
     def __init__(self, ranges_list, custom_range_box=True, spacing=0, checkbox_spacing=15, checkbox_width=0, row_max=4):
         super().__init__(spacing=spacing)
 
         self.editors = []
         self.checkbox_manager = CheckboxManager()
+        self.checkbox_manager.selectionChanged.connect(self.emit_selection_changed)
 
 
         # TODO: SIMPLIFY -- Break this shit up
@@ -136,6 +148,7 @@ class RangeCheckboxArray(base_layouts.VerticalLayout):
             if checkbox_width > 0:
                 _range_editor.setFixedWidth(checkbox_width)
 
+            _range_editor.stateChanged.connect(self.emit_selection_changed)
             self.checkbox_manager.addCheckBox(
                 checkbox_instance=_range_editor,
                 checkbox_unchecked_signal=_range_editor.unchecked,
@@ -156,6 +169,10 @@ class RangeCheckboxArray(base_layouts.VerticalLayout):
         _selected_ranges = [_checkbox.value() for _checkbox in self.checkbox_manager.currentlyChecked()]
         logger.debug(f'Selected ranges: {_selected_ranges}')
         return _selected_ranges
+
+    @QtCore.Slot()
+    def emit_selection_changed(self):
+        self.rangeSelectionChanged.emit(self.checked_ranges())
 
 if __name__ == "__main__":
     import sys

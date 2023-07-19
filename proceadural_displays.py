@@ -1,5 +1,6 @@
 import os.path
 from PySide2 import QtCore
+from functools import partial
 from pyqt_interface_elements import (
     base_layouts,
     base_windows,
@@ -55,6 +56,7 @@ class AbstractAttributeEntry(base_layouts.HorizontalLayout):
         if not callable(_attr):
             return
         self.attribute_editor_widget.setReadOnly(enabled)
+
 
 class LineEditAttributeEditor(AbstractAttributeEntry):
     IDENTIFIER = str
@@ -195,6 +197,7 @@ class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
 
     def attribute_editor(self, attribute_value):
         _widget = checkbox.RangeCheckboxArray(ranges_list=attribute_value)
+        _widget.rangeSelectionChanged.connect(self.valueEdited.emit)
         return _widget
 
     def attribute_editor_value(self, attribute_editor):
@@ -235,11 +238,16 @@ class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
 
 
 class AbstractEntryHolder(base_layouts.VerticalLayout):
+    valueChanged = QtCore.Signal(str, object)
 
     def __init__(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type=True, attribute_title_width=150, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(margins, spacing)
         self.attribute_entries = []
-        self._build(attribute_dictionary, attribute_mapping_dictionary, map_by_type, attribute_title_width)
+
+        self.attribute_mapping_dictionary = attribute_mapping_dictionary
+        self.map_by_type = map_by_type
+
+        self._build(attribute_dictionary, self.attribute_mapping_dictionary, self.map_by_type, attribute_title_width)
 
     def _build(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type, attribute_title_width):
         for _attribute_name, _attribute_value in attribute_dictionary.items():
@@ -252,6 +260,7 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
             if _attribute_entry is None:
                 continue
             _attribute_entry.set_title_fixed_width(attribute_title_width)
+            _attribute_entry.valueEdited.connect( partial(self.valueChanged.emit, _attribute_name) )
             self.addWidget(_attribute_entry)
             self.attribute_entries.append(_attribute_entry)
         self.addStretch(1)
@@ -264,7 +273,6 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
         return _attribute_dictionary
 
 
-
     def create_attribute_entry(self, attribute_name, attribute_value, attribute_mapping_dictionary, map_by_type):
         if map_by_type is True:
             return self.create_attribute_entry_by_type(attribute_name, attribute_value, attribute_mapping_dictionary)
@@ -274,6 +282,34 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
     def create_attribute_entry_by_type(self, attribute_name, attribute_value, attribute_mapping_dictionary):
         _entry = attribute_mapping_dictionary[type(attribute_value)]
         return _entry(attribute_name, attribute_value)
+
+
+    def get_attribute_entry(self, attribute_name):
+        for _entry in self.attribute_entries:
+            if _entry.attribute_name == attribute_name:
+                return _entry
+
+    def update_attribute(self, attribute_name, attribute_value):
+        _entry = self.get_attribute_entry(attribute_name)
+
+        _new_entry = self.create_attribute_entry(
+            attribute_name=attribute_name,
+            attribute_value=attribute_value,
+            attribute_mapping_dictionary=self.attribute_mapping_dictionary,
+            map_by_type=self.map_by_type
+        )
+
+        self.replace_entry(_entry, _new_entry)
+
+
+
+    def replace_entry(self, entry, newEntry):
+        self.replace_widget(widget=entry, newWidget=newEntry)
+
+        _index = self.attribute_entries.index(entry)
+        self.attribute_entries.pop(_index)
+        self.attribute_entries.insert(_index, newEntry)
+
 
 
 if __name__ == "__main__":

@@ -90,7 +90,6 @@ class Layout(QtWidgets.QWidget):
         # _index = self.children.index(child_widget)
         # self.children.pop(_index)
 
-
     def get_child_at_position(self, localPoint):
         """
         If there is one will return the layouts child widget containing the given point
@@ -115,6 +114,41 @@ class Layout(QtWidgets.QWidget):
                 return _child
 
         return None
+
+    def get_widget_index(self, widget):
+        """
+        Get a widgets index in the layout
+
+        Parameters
+        ----------
+        widget
+
+        Returns
+        -------
+
+        """
+        for i, _widget in self.layout.children():
+            if _widget == widget:
+                return i
+
+    def replace_widget(self, widget, newWidget):
+        """
+        Replace the given widget in the layout
+
+        Parameters
+        ----------
+        widget
+        newWidget
+
+        Returns
+        -------
+
+        """
+        _widget_index = self.get_widget_index(widget)
+
+        self.disown_child(widget)
+
+        self.insertWidget(_widget_index, newWidget)
 
 
 class VerticalLayout(Layout):
