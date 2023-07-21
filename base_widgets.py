@@ -5,6 +5,12 @@ class Line_Edit(QtWidgets.QLineEdit):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # self.setAlignment(QtCore.Qt.AlignRight)
+
+
+    def setText(self, arg__1):
+        super().setText(arg__1)
+        self.setCursorPosition(0)
 
 class Button(QtWidgets.QPushButton):
 

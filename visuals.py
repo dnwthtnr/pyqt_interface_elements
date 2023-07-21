@@ -4,35 +4,49 @@ import time
 from PySide2 import QtCore, QtWidgets, QtGui
 from pyqt_interface_elements import constants
 import os
-def get_animation_icons(file_name):
-    _path = os.path.join("", constants.animation_local_directory, file_name)
 
-    _icon_list = []
-    for _image in sorted(os.listdir(_path)):
-        _icon = QtGui.QIcon(_path)
-        _icon_list.append(_icon)
+r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\load00.gif"
 
-    return _icon_list
+# def get_animation_icons(file_name):
+#     _path = os.path.join("", constants.animation_local_directory, file_name)
+#
+#     _icon_list = []
+#     for _image in sorted(os.listdir(_path)):
+#         _icon = QtGui.QIcon(_path)
+#         _icon_list.append(_icon)
+#
+#     return _icon_list
+#
+# class LoadingRing(base_widgets.Tool_Button):
+#
+#     def __init__(self):
+#         super().__init__()
+#
+#     def start_animation(self):
+#
+#         _icons = get_animation_icons("ring_load")
+#
+#         _amount = len(_icons)
+#         _count = 0
+#         while self.isVisible() is True:
+#             print(_count)
+#             self.setIcon(_icons[_count])
+#             _count += 1
+#             if _count == _amount:
+#                 _count = 0
+#             time.sleep(.3)
 
-class LoadingRing(base_widgets.Tool_Button):
-    
-    def __init__(self):
-        super().__init__()
+def get_gif(name):
+    _label = QtWidgets.QLabel()
 
-    def start_animation(self):
+    _mov = QtGui.QMovie(r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\loads.gif")
 
-        _icons = get_animation_icons("ring_load")
 
-        _amount = len(_icons)
-        _count = 0
-        while self.isVisible() is True:
-            print(_count)
-            self.setIcon(_icons[_count])
-            _count += 1
-            if _count == _amount:
-                _count = 0
-            time.sleep(.3)
+    _label.setMovie(_mov)
+    return _label
 
+
+loading_wheel = get_gif('loads')
 
 if __name__ == "__main__":
     import sys
@@ -41,15 +55,15 @@ if __name__ == "__main__":
 
     try:
         _window = base_layouts.VerticalLayout()
+        _label = QtWidgets.QLabel()
 
-        _icons = LoadingRing()
-        _window.addWidget(_icons)
+        _mov = QtGui.QMovie(r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\loads.gif")
 
+
+        _label.setMovie(_mov)
+        _window.addWidget(_label)
         _window.show()
-        _icons.start_animation()
-
-        time.sleep(5)
-        _icons.hide()
+        _mov.start()
     except Exception as e:
         print(e)
 

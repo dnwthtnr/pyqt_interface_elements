@@ -350,7 +350,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             The amount of columns
 
         """
-        return 2
+        return 1
 
     def data(self, index, role=None):
         """
