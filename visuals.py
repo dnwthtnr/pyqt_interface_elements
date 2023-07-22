@@ -4,8 +4,7 @@ import time
 from PySide2 import QtCore, QtWidgets, QtGui
 from pyqt_interface_elements import constants
 import os
-
-r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\load00.gif"
+from functools import partial
 
 # def get_animation_icons(file_name):
 #     _path = os.path.join("", constants.animation_local_directory, file_name)
@@ -36,17 +35,16 @@ r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\load00.gif"
 #                 _count = 0
 #             time.sleep(.3)
 
-def get_gif(name):
+def get_media(name):
     _label = QtWidgets.QLabel()
 
-    _mov = QtGui.QMovie(r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\loads.gif")
-
-
+    _mov = QtGui.QMovie(os.path.join(constants.animation_local_directory, f"{name}.gif"))
     _label.setMovie(_mov)
+    _mov.start()
     return _label
 
 
-loading_wheel = get_gif('loads')
+loading_wheel = partial(get_media, 'loads')
 
 if __name__ == "__main__":
     import sys
@@ -55,15 +53,8 @@ if __name__ == "__main__":
 
     try:
         _window = base_layouts.VerticalLayout()
-        _label = QtWidgets.QLabel()
-
-        _mov = QtGui.QMovie(r"Q:\__packages\_GitHub\pyqt_interface_elements\resources\animations\loads.gif")
-
-
-        _label.setMovie(_mov)
-        _window.addWidget(_label)
+        _window.addWidget(loading_wheel())
         _window.show()
-        _mov.start()
     except Exception as e:
         print(e)
 
