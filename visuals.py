@@ -35,13 +35,45 @@ from functools import partial
 #                 _count = 0
 #             time.sleep(.3)
 
+class MovieDisplay(base_layouts.VerticalLayout):
+
+    def __init__(self, movie):
+        super().__init__()
+        self._label = QtWidgets.QLabel()
+        self._label.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self._label.setMovie(movie)
+        self.addWidget(self._label)
+        movie.start()
+
+
+    def resizeEvent(self, event):
+        _rect = self.geometry()
+        _width = _rect.width()
+        _height = _rect.height()
+
+        if _width != _height:
+            if _width > _height:
+                _width = _height
+            else:
+                _height = _width
+
+        _size = QtCore.QSize(_width, _height)
+
+        self._label.movie().setScaledSize(_size)
+
+        super().resizeEvent(event)
+
 def get_media(name):
-    _label = QtWidgets.QLabel()
+    # _label = QtWidgets.QLabel()
+    # _label.setMinimumSize(0, 0)
+    # # _label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+    # _movie = _label.movie()
 
     _mov = QtGui.QMovie(os.path.join(constants.animation_local_directory, f"{name}.gif"))
-    _label.setMovie(_mov)
-    _mov.start()
-    return _label
+    # _mov.setScaledSize(QtCore.QSize(50, 50))
+    _movie_display = MovieDisplay(_mov)
+    _movie_display.setMinimumSize(1, 1)
+    return _movie_display
 
 
 loading_wheel = partial(get_media, 'loads')
@@ -52,8 +84,7 @@ if __name__ == "__main__":
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _window = base_layouts.VerticalLayout()
-        _window.addWidget(loading_wheel())
+        _window = loading_wheel()
         _window.show()
     except Exception as e:
         print(e)
