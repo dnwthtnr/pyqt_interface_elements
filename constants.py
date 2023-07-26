@@ -3,8 +3,8 @@ from PySide2 import QtCore
 
 current_directory = os.path.dirname(__file__)
 
-vertical = "Orientation: VERTICAL"
-horizontal = "Orientation: HORIZONTAL"
+vertical = QtCore.Qt.Vertical
+horizontal = QtCore.Qt.Horizontal
 
 align_right = QtCore.Qt.AlignRight
 align_left = QtCore.Qt.AlignLeft

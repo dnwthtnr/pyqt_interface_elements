@@ -163,6 +163,12 @@ class HorizontalLayout(Layout):
         super().__init__(layout_orientation=constants.horizontal, margins=margins, spacing=spacing)
 
 
+class StackedWidget(QtWidgets.QStackedWidget):
+
+    def __init__(self):
+        super().__init__()
+
+
 class ScrollArea(QtWidgets.QScrollArea):
 
     # def __getattr__(self, item):
