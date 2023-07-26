@@ -40,13 +40,16 @@ class MovieDisplay(base_layouts.VerticalLayout):
     def __init__(self, movie):
         super().__init__()
         self._label = QtWidgets.QLabel()
+
         self._label.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         self._label.setMovie(movie)
         self.addWidget(self._label)
         movie.start()
 
+        # self.resizeMovie()
 
-    def resizeEvent(self, event):
+
+    def resizeMovie(self):
         _rect = self.geometry()
         _width = _rect.width()
         _height = _rect.height()
@@ -60,6 +63,10 @@ class MovieDisplay(base_layouts.VerticalLayout):
         _size = QtCore.QSize(_width, _height)
 
         self._label.movie().setScaledSize(_size)
+
+    def resizeEvent(self, event):
+
+        self.resizeMovie()
 
         super().resizeEvent(event)
 

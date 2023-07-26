@@ -1,4 +1,4 @@
 QSplitter::handle {
 color: @maya_blue_selection;
-background-color: @maya_negative_space;
+background-color: @282D2E;
 }

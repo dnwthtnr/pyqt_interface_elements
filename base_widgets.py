@@ -53,3 +53,9 @@ class CheckBox(QtWidgets.QCheckBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        
+class Slider(QtWidgets.QSlider):
+    
+    def __init__(self):
+        super().__init__()

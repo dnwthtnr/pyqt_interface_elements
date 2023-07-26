@@ -1,9 +1,9 @@
 QWidget{
-background-color: @maya_expanded_background;
+background-color: @primary_75;
 }
 QLineEdit{
 color: @maya_white_text;
-background-color: @maya_negative_space;
+background-color: @primary_25;
 border: none;
 }
 QLabel{

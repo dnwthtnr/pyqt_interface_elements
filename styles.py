@@ -20,6 +20,12 @@ variables = {
     "@maya_blue_selection;": "#568aad;",
     "@maya_negative_space;": "#2b2b2b;",
     "@maya_expanded_background;": "#494949;",
+
+
+    "@primary_25;": "#2B2B2B;",
+    "@primary_50;": "#373737;",
+    "@primary_75;": "#444444;",
+    "@primary_100;": "#656565;",
 }
 
 def get_style_var(style):
