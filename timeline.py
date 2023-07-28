@@ -1,24 +1,35 @@
 from pyqt_interface_elements import base_layouts, base_widgets, constants
-from PySide2 import QtWidgets
-
-QtWidgets.QGraphicsView()
+from PySide2 import QtWidgets, QtGui
 
 
-class TimeLine(QtWidgets.QGraphicsScene):
+class TimeLine(base_layouts.HorizontalLayout):
 
     def __init__(self, start_frame, end_frame):
         super().__init__()
-        self.setSceneRect( -100.0, -100.0, 200.0, 200.0 )
+
+        self.scene = QtWidgets.QGraphicsScene()
+        self.scene.setSceneRect( -100.0, -100.0, 200.0, 200.0 )
+
         self.start_frame = start_frame
         self.end_frame = end_frame
 
         self.start_frame_slider = self.build_start_frame_slider()
         self.end_frame_slider = self.build_end_frame_slider()
 
+        self.start_frame_slider.setStyleSheet("*{background-color: transparent;}")
+        self.end_frame_slider.setStyleSheet("*{background-color: transparent;}")
+
         # QtWidgets.QGraphicsScene()
 
-        self.addWidget(self.start_frame_slider)
-        self.addWidget(self.end_frame_slider)
+        _start_slider_proxy = self.scene.addWidget(self.start_frame_slider)
+        # _start_slider_proxy.valueChanged.connect(print)
+        _end_slider_proxy = self.scene.addWidget(self.end_frame_slider)
+        # _end_slider_proxy.valueChanged.connect(print)
+
+        self.view = QtWidgets.QGraphicsView(self.scene)
+        self.view.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        self.addWidget(self.view)
 
 
     def build_start_frame_slider(self):
@@ -82,12 +93,12 @@ if __name__ == "__main__":
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _scene = TimeLine(0, 100)
-        _vuiew = QtWidgets.QGraphicsView()
-        _vuiew.setScene(_scene)
-
-        _window = base_layouts.VerticalLayout()
-        _window.addWidget(_vuiew)
+        _window = TimeLine(0, 100)
+        # _vuiew = QtWidgets.QGraphicsView()
+        # _vuiew.setScene(_scene)
+        #
+        # _window = base_layouts.VerticalLayout()
+        # _window.addWidget(_vuiew)
         _window.show()
     except Exception as e:
         print(e)
