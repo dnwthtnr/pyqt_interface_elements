@@ -4,6 +4,7 @@ from pyqt_interface_elements import base_widgets, constants
 
 
 class RangeSlider(base_widgets.Slider):
+    sliderMoved = QtCore.Signal(int, int)
 
 
     def __init__(self, minimum, maximum):
@@ -67,6 +68,107 @@ class RangeSlider(base_widgets.Slider):
             style.drawComplexControl(QtWidgets.QStyle.CC_Slider, opt, painter, self)
 
         return
+
+    def mousePressEvent(self, event):
+        event.accept()
+
+        _widget_style = QtWidgets.QApplication.style()
+        _button = event.button()
+
+        if _button is None:
+            event.ignore()
+            return
+
+
+        _slider_style_option = QtWidgets.QStyleOptionSlider()
+        self.initStyleOption(_slider_style_option)
+
+        self.active_slider = -1
+
+        for i, slider_value in enumerate([self._lower_bound, self._upper_bound]):
+            _slider_style_option.sliderPosition = slider_value
+            _element_clicked_on = _widget_style.hitTestComplexControl(_widget_style.CC_Slider, _slider_style_option, event.pos(), self)
+
+            if _element_clicked_on == _widget_style.SC_SliderHandle:
+                self.active_slider = i
+                self._pressed_element = _element_clicked_on
+
+                self.triggerAction(self.SliderMove)
+                self.setRepeatAction(self.SliderNoAction)
+                self.setSliderDown(True)
+
+                print(self.active_slider)
+
+                break
+
+    def mouseMoveEvent(self, event):
+        if self._pressed_element != QtWidgets.QStyle.SC_SliderHandle:
+            event.ignore()
+            return
+
+
+        event.accept()
+        print(event.pos())
+        _new_position = self.pixel_value_to_slider_value(event.pos())
+
+        if self.active_slider == 0:
+            if _new_position >= self._upper_bound:
+                _new_position = self._upper_bound - 1
+            self._lower_bound = _new_position
+
+        if self.active_slider == 1:
+            if _new_position <= self._lower_bound:
+                _new_position = self._lower_bound + 1
+            self._upper_bound = _new_position
+
+        self.update()
+
+        self.slider
+
+        else:
+            return
+
+    def pixel_value_to_slider_value(self, point_on_slider):
+        position = point_on_slider.x() if self.orientation() == constants.horizontal else point_on_slider.y()
+
+        _slider_style_option = QtWidgets.QStyleOptionSlider()
+        self.initStyleOption(_slider_style_option)
+        _widget_style = QtWidgets.QApplication.style()
+
+        _slider_groove_geometry = _widget_style.subControlRect(
+            control=_widget_style.CC_Slider,
+            option=_slider_style_option,
+            subControl=_widget_style.SC_SliderGroove,
+            widget=self
+        )
+        _slider_handle_geometry = _widget_style.subControlRect(
+            control=_widget_style.CC_Slider,
+            option=_slider_style_option,
+            subControl=_widget_style.SC_SliderHandle,
+            widget=self
+        )
+
+        if self.orientation() == constants.horizontal:
+            _slider_length = _slider_handle_geometry.width()
+            _slider_min = _slider_groove_geometry.x()
+            _slider_max = _slider_groove_geometry.right() - _slider_length + 1
+        else:
+            _slider_length = _slider_handle_geometry.height()
+            _slider_min = _slider_groove_geometry.y()
+            _slider_max = _slider_groove_geometry.bottom() - _slider_length + 1
+
+        _slider_lower_span = position - _slider_min
+        _slider_upper_span = _slider_max - _slider_min
+
+        _slider_value = _widget_style.sliderValueFromPosition(
+            min=self.minimum(),
+            max=self.maximum(),
+            position=position,
+            span=[_slider_lower_span, _slider_upper_span],
+            upsideDown=_slider_style_option.upsideDown
+        )
+        return
+
 
 
 
