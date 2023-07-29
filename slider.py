@@ -123,10 +123,7 @@ class RangeSlider(base_widgets.Slider):
 
         self.update()
 
-        self.slider
-
-        else:
-            return
+        self.sliderMoved.emit(self._lower_bound, self._upper_bound)
 
     def pixel_value_to_slider_value(self, point_on_slider):
         position = point_on_slider.x() if self.orientation() == constants.horizontal else point_on_slider.y()
@@ -136,16 +133,16 @@ class RangeSlider(base_widgets.Slider):
         _widget_style = QtWidgets.QApplication.style()
 
         _slider_groove_geometry = _widget_style.subControlRect(
-            control=_widget_style.CC_Slider,
-            option=_slider_style_option,
-            subControl=_widget_style.SC_SliderGroove,
-            widget=self
+            _widget_style.CC_Slider,
+            _slider_style_option,
+            _widget_style.SC_SliderGroove,
+            self
         )
         _slider_handle_geometry = _widget_style.subControlRect(
-            control=_widget_style.CC_Slider,
-            option=_slider_style_option,
-            subControl=_widget_style.SC_SliderHandle,
-            widget=self
+            _widget_style.CC_Slider,
+            _slider_style_option,
+            _widget_style.SC_SliderHandle,
+            self
         )
 
         if self.orientation() == constants.horizontal:
@@ -161,13 +158,14 @@ class RangeSlider(base_widgets.Slider):
         _slider_upper_span = _slider_max - _slider_min
 
         _slider_value = _widget_style.sliderValueFromPosition(
-            min=self.minimum(),
-            max=self.maximum(),
-            position=position,
-            span=[_slider_lower_span, _slider_upper_span],
-            upsideDown=_slider_style_option.upsideDown
+            self.minimum(),
+            self.maximum(),
+            _slider_lower_span,
+            _slider_upper_span,
+            _slider_style_option.upsideDown
         )
-        return
+        
+        return _slider_value
 
 
 
