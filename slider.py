@@ -164,7 +164,7 @@ class RangeSlider(base_widgets.Slider):
             _slider_upper_span,
             _slider_style_option.upsideDown
         )
-        
+
         return _slider_value
 
 
@@ -176,15 +176,15 @@ if __name__ == "__main__":
 
     _app = QtWidgets.QApplication(sys.argv)
 
-    try:
-        _window = RangeSlider(0, 100)
-        # _vuiew = QtWidgets.QGraphicsView()
-        # _vuiew.setScene(_scene)
-        #
-        # _window = base_layouts.VerticalLayout()
-        # _window.addWidget(_vuiew)
-        _window.show()
-    except Exception as e:
-        print(e)
+    _window = RangeSlider(0, 100)
+    # _vuiew = QtWidgets.QGraphicsView()
+    # _vuiew.setScene(_scene)
+    #
+    # _window = base_layouts.VerticalLayout()
+    # _window.addWidget(_vuiew)
+    _window.show()
 
     sys.exit(_app.exec_())
+    import time
+    time.sleep(2.5)
+    _window.setLowerBound(50)
