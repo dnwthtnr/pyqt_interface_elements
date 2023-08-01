@@ -91,7 +91,6 @@ class RangeSlider(base_widgets.Slider):
             _slider_handle_style_option = self.paintSliderHandle(handle_value=_handle_value)
             style.drawComplexControl(QtWidgets.QStyle.CC_Slider, _slider_handle_style_option, painter, self)
 
-
     def paintSliderGroove(self, painter, style):
         _opt = QtWidgets.QStyleOptionSlider()
         self.initStyleOption(_opt)
