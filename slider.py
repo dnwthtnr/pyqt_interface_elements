@@ -39,11 +39,11 @@ class RangeSlider(base_widgets.Slider):
 
         # self.paint
 
-        # _groove_control_rect = self.paintSliderGroove(painter, style)
+        _groove_control_rect = self.paintSliderGroove(painter, style)
 
         # self.paintTickMarks(_groove_control_rect, painter, style)
 
-        # self.paintSelectedRange(painter, style)
+        self.paintSelectedRange(painter, style)
         self.paintSliderHandles(painter=painter, style=style)
         return
 
@@ -134,7 +134,11 @@ class RangeSlider(base_widgets.Slider):
 
         painter.setPen(_pen)
 
-        painter.drawRect(_selection_rectangle)
+        _opt
+
+        #TODO: style option for rectangle and set it as the region. then draw with the given style and painter
+
+        style.drawPrimitive(_selection_rectangle, painter, self)
 
     def paintTickMarks(self, painter, style):
         _slider_beginning = self.point_dimension_for_orientation(self.rect().left())
