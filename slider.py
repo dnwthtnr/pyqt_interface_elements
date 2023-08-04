@@ -1,5 +1,15 @@
+import copy
 from PySide2 import QtCore, QtWidgets, QtGui
 from pyqt_interface_elements import base_widgets, constants, styles
+
+class RangeSliderTick(QtWidgets.QWidget):
+
+    def __init__(self, rect):
+        super().__init__()
+        self.setGeometry(rect)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
 
 
 class RangeSlider(base_widgets.Slider):
@@ -14,6 +24,8 @@ class RangeSlider(base_widgets.Slider):
 
         self._lower_bound = 50
         self._upper_bound = self.maximum()
+
+        self.tick_marks = []
 
     # region Value Setters
 
@@ -39,12 +51,13 @@ class RangeSlider(base_widgets.Slider):
 
         # self.paint
 
-        _groove_control_rect = self.paintSliderGroove(painter, style)
+        self.paintSliderGroove(painter, style)
 
         # self.paintTickMarks(_groove_control_rect, painter, style)
 
         self.paintSelectedRange(painter, style)
         self.paintSliderHandles(painter=painter, style=style)
+        self.paintRandomTickMarks(painter, style)
         return
 
     # region Painters
@@ -105,40 +118,77 @@ class RangeSlider(base_widgets.Slider):
 
         # style.drawComplexControl(QtWidgets.QStyle.CC_Slider, _opt, painter, self)
 
-
-        # in between handles
-
         _palette = QtGui.QPalette()
         _palette.setColor(QtGui.QPalette.Window, QtGui.QColor(255, 0, 0))
 
-        _opt.palette = _palette
 
         style.drawComplexControl(QtWidgets.QStyle.CC_Slider, _opt, painter, self)
 
     def paintSelectedRange(self, painter, style):
+        """
+
+        Parameters
+        ----------
+        painter
+        style : QtWidget.QStyle
+
+        Returns
+        -------
+
+        """
 
         _pixel_upper_limit = self.slider_value_to_pixel_value(self.upperBound())
         _pixel_lower_limit = self.slider_value_to_pixel_value(self.lowerBound())
 
-        _slider_top = self.mapFromParent(QtCore.QPoint(0, self.rect().top())).y()
-        _slider_bottom = self.mapFromParent(QtCore.QPoint(0, self.rect().bottom())).y()
+        _slider_top = self.rect().top()
+        _slider_bottom = self.rect().bottom()
+
         # print(_slider_height)
 
         _top_left = QtCore.QPoint(_pixel_lower_limit, _slider_top)
         _bottom_right   = QtCore.QPoint(_pixel_upper_limit, _slider_bottom)
 
         _selection_rectangle = QtCore.QRect(_top_left, _bottom_right)
+        # _selection_rectangle = QtCore.QRect(QtCore.QPoint(0, 100), QtCore.QPoint(500, 0))
 
         _pen = QtGui.QPen()
-        _pen.setColor(QtCore.Qt.green)
+        _pen.setColor(QtCore.Qt.blue)
+
+        _brush = QtGui.QBrush()
+        _brush.setColor(QtCore.Qt.blue)
+        # _brush
 
         painter.setPen(_pen)
+        painter.setBrush(_brush)
 
-        _opt
+        _opt = QtWidgets.QStyleOptionSlider()
+        self.initStyleOption(_opt)
+        _opt.subControls = QtWidgets.QStyle.SC_SliderGroove
+        # print(_opt.rect)
+        _opt.rect = _selection_rectangle
+        # print(_selection_rectangle)
+
 
         #TODO: style option for rectangle and set it as the region. then draw with the given style and painter
 
-        style.drawPrimitive(_selection_rectangle, painter, self)
+        style.drawComplexControl(QtWidgets.QStyle.CC_Slider, _opt, painter, self)
+
+    def paintRandomTickMarks(self, painter, style):
+        # _style = QtWidgets.QStyle()
+        # _style.
+        for i, _handle_value in enumerate([4, 50, 75, 20, 9, 44]):
+            _pixel_value = self.slider_value_to_pixel_value(_handle_value)
+            _top = self.rect().top()
+
+            _top_left = QtCore.QPoint(_pixel_value, _top)
+            _bottom_right = QtCore.QPoint(_pixel_value + 1, self.rect().bottom())
+
+            _rect = QtCore.QRect(_top_left, _bottom_right)
+
+            _color = QtGui.QColor(255, 10, 20, 50)
+
+            painter.fillRect(_rect, _color)
+
 
     def paintTickMarks(self, painter, style):
         _slider_beginning = self.point_dimension_for_orientation(self.rect().left())
@@ -249,7 +299,7 @@ class RangeSlider(base_widgets.Slider):
 
         _slider_range = self.maximum() - self.minimum()
 
-        print(_widget_geometry_pixel_lower_limit, _widget_geometry_pixel_range, _difference_ratio)
+        # print(_widget_geometry_pixel_lower_limit, _widget_geometry_pixel_range, _difference_ratio)
 
         _val = _slider_range * _difference_ratio
 
