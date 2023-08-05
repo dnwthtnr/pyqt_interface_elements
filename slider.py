@@ -1,19 +1,8 @@
 import copy
 from PySide2 import QtCore, QtWidgets, QtGui
-from pyqt_interface_elements import base_widgets, constants, styles
-
-class RangeSliderTick(QtWidgets.QWidget):
-
-    def __init__(self, rect):
-        super().__init__()
-        self.setGeometry(rect)
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-
-
+from pyqt_interface_elements import base_widgets, constants, styles, base_layouts, line_edits, icons
 class RangeSlider(base_widgets.Slider):
-    sliderMoved = QtCore.Signal(int, int)
+    sliderMoved = QtCore.Signal(float, float)
 
     def __init__(self, minimum, maximum, values_to_mark=[]):
         super().__init__()
@@ -205,8 +194,8 @@ class RangeSlider(base_widgets.Slider):
 
         # print(_slider_height)
 
-        _top_left = QtCore.QPoint(_pixel_lower_limit, _slider_top)
-        _bottom_right   = QtCore.QPoint(_pixel_upper_limit, _slider_bottom)
+        _top_left = QtCore.QPoint(_pixel_lower_limit + 5, _slider_top)
+        _bottom_right   = QtCore.QPoint(_pixel_upper_limit - 5, _slider_bottom)
 
         _selection_rectangle = QtCore.QRect(_top_left, _bottom_right)
 
@@ -264,7 +253,7 @@ class RangeSlider(base_widgets.Slider):
 
 
     def paintTickMarks(self, painter, style):
-        _multiple_of = 5
+        _multiple_of = 2
         _draw_number = False
         for _value in range(self.maximum()-self.minimum()):
 
@@ -274,10 +263,11 @@ class RangeSlider(base_widgets.Slider):
 
             _pixel_value = self.slider_value_to_pixel_value(_value)
             _top = self.rect().center().y()
+            _bottom = self.rect().bottom()
 
 
             _top_left = QtCore.QPoint(_pixel_value, _top)
-            _bottom_right = QtCore.QPoint(_pixel_value + 3, self.rect().bottom())
+            _bottom_right = QtCore.QPoint(_pixel_value + 3, _bottom)
 
             _rect = QtCore.QRect(_top_left, _bottom_right)
 
@@ -289,7 +279,7 @@ class RangeSlider(base_widgets.Slider):
                 _draw_number = True
                 continue
 
-            painter.drawText(QtCore.QPoint(_pixel_value+5, _top-5), str(_value))
+            painter.drawText(QtCore.QPoint(_pixel_value+6, _bottom-1), str(_value))
             _draw_number = False
 
     # endregion
@@ -442,8 +432,6 @@ class RangeSlider(base_widgets.Slider):
             _slider_style_option.upsideDown
         )
 
-        print(_slider_value, _val)
-
         return _val
 
     def slider_value_to_pixel_value(self, slider_value):
@@ -528,12 +516,150 @@ class RangeSlider(base_widgets.Slider):
         # _position = _widget_style.sliderPositionFromValue(_slider_min, _slider_max, slider_value, _slider_lower_span, _slider_upper_span)
         # return _position
 
+
+class RangeSelector(base_layouts.HorizontalLayout):
+    rangeSelected = QtCore.Signal(float, float)
+
+    def __init__(self, minimum, maximum, values_to_mark=[]):
+        super().__init__()
+        self._range_slider = self._build_range_slider(minimum, maximum, values_to_mark)
+        self._select_button = self._build_select_button(text="Select")
+
+        self.addWidget(self._range_slider)
+        self.addWidget(self._select_button, alignment=constants.align_right)
+
+    def _build_range_slider(self, minimum, maximum, values_to_mark=[]):
+        _widget = RangeSlider(minimum, maximum, values_to_mark)
+        return _widget
+
+    def _build_select_button(self, text):
+        _widget = base_widgets.Button(text=text)
+        _widget.clicked.connect(self.selectButtonClicked)
+        return _widget
+
+    @QtCore.Slot()
+    def selectButtonClicked(self):
+        self.rangeSelected.emit(self._range_slider.lowerBound(), self._range_slider.upperBound())
+
+
+
+class RangeElement(base_layouts.HorizontalLayout):
+    deleted = QtCore.Signal()
+
+    def __init__(self, min, max):
+        super().__init__()
+
+        self._range_line_edit = self._build_range_line_edit(min, max)
+        self._delete_button = self._build_delete_button()
+
+        self.addWidget(self._range_line_edit)
+        self.addWidget(self._delete_button)
+
+    def range(self):
+        return self._range_line_edit.value
+
+    def setRange(self, range):
+        self._range_line_edit.set_x_value(range[0])
+        self._range_line_edit.set_x_value(range[1])
+
+    def _build_range_line_edit(self, min, max):
+        _range_widget = line_edits.TwoDimensionalFloat(min, max)
+
+        return _range_widget
+
+    def _build_delete_button(self):
+        _widget = base_widgets.Tool_Button()
+        _widget.setIcon(icons.close)
+        _widget.clicked.connect(self._delete)
+        return _widget
+
+    @QtCore.Slot()
+    def _delete(self):
+        self.deleted.emit()
+        self.close()
+
+
+
+class RangeListEditor(base_layouts.VerticalScrollArea):
+    rangeListChanged = QtCore.Signal()
+
+    def __init__(self, ranges=[]):
+        super().__init__()
+        self._range_widgets = []
+        self.addStretch(1)
+        self.addRanges(ranges)
+
+    def ranges(self):
+        _range_list = []
+        for _range_widget in self._range_widgets:
+            _range = _range_widget.range()
+            _range_list.append(_range)
+        return _range_list
+
+    def addRange(self, range):
+        """
+        Builds a widet to display the given range and adds it
+
+        Parameters
+        ----------
+        range
+
+        Returns
+        -------
+
+        """
+        _range_editor = RangeElement(range[0], range[1])
+        _range_editor.deleted.connect(self.rangeListChanged.emit)
+        self._range_widgets.append(_range_editor)
+        self.addWidget(_range_editor)
+        self.rangeListChanged.emit()
+
+    def addRanges(self, ranges):
+        for _range in ranges:
+            self.addRange(_range)
+        self.rangeListChanged
+
+
+
+class RangeListSelector(base_layouts.VerticalLayout):
+    rangeListChanged = QtCore.Signal(object)
+
+    def __init__(self, minimum, maximum, range_list=[], values_to_mark=[]):
+        super().__init__()
+
+        self._range_selector = self._build_range_selector(minimum, maximum, values_to_mark)
+        self._range_list_editor = self._build_range_list_editor(range_list)
+
+        self.addWidget(self._range_selector)
+        self.addWidget(self._range_list_editor)
+
+    def ranges(self):
+        return self._range_list_editor.ranges()
+
+    def _build_range_selector(self, minimum, maximum, values_to_mark=[]):
+        _widget = RangeSelector(minimum, maximum, values_to_mark)
+        _widget.rangeSelected.connect(self.rangeSelected)
+        return _widget
+
+    @QtCore.Slot()
+    def rangeSelected(self, min, max):
+        self._range_list_editor.addRange([min, max])
+
+    def _build_range_list_editor(self, range_list):
+        _widget = RangeListEditor(range_list)
+        _widget.rangeListChanged.connect(self.emitRangeListChanged)
+        return _widget
+
+    def emitRangeListChanged(self):
+        self.rangeListChanged.emit(self.ranges())
+
+
 if __name__ == "__main__":
     import sys
 
     _app = QtWidgets.QApplication(sys.argv)
 
-    _window = RangeSlider(0, 100)
+    _window = RangeListSelector(0, 100)
     # _vuiew = QtWidgets.QGraphicsView()
     # _vuiew.setScene(_scene)
     #

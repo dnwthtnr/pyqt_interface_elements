@@ -10,7 +10,8 @@ from pyqt_interface_elements import (
     line_edits,
     text_edit,
     labels,
-    checkbox
+    checkbox,
+    slider
 )
 
 
@@ -235,6 +236,58 @@ class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
                 return False
 
         return True
+
+class RangeSliderAttributeEditor(AbstractAttributeEntry):
+    timeLineRangeQuery = QtCore.Signal(object)
+    timeLineMarkersQuery = QtCore.Signal(object)
+
+    def __int__(self, attribute_name, attribute_value):
+        # self.timeLineRangeQuery.emit(self)
+        # self.timeLineMarkersQuery.emit(self)
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = slider.RangeListSelector(minimum=1, maximum=100, range_list=attribute_value, values_to_mark=[1, 34])
+        _widget.rangeListChanged.connect(self.valueEdited.emit)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        """
+
+        Parameters
+        ----------
+        attribute_editor
+
+        Returns
+        -------
+        list[list]
+
+        """
+        return attribute_editor.ranges()
+
+    def identifier(self, value):
+        if not isinstance(value, list):
+            return False
+
+        # check if all contents are lists
+        _contents_list = [isinstance(_item, list) for _item in value]
+        if False in _contents_list:
+            return False
+
+        # check if all lists are of length 2
+        _contents_all_ranges = [len(_item) == 2 for _item in value]
+        if False in _contents_all_ranges:
+            return False
+
+        # check if all lists hold 2 ints
+        for _item in value:
+            _item_type_pair = [type(_item[0]), type(_item[1])]
+            if _item_type_pair != [float, float] and _item_type_pair != [int, int]:
+                return False
+
+        return True
+
+
 
 
 class AbstractEntryHolder(base_layouts.VerticalLayout):
