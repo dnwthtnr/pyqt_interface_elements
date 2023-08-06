@@ -521,6 +521,18 @@ class RangeSelector(base_layouts.HorizontalLayout):
     rangeSelected = QtCore.Signal(float, float)
 
     def __init__(self, minimum, maximum, values_to_mark=[]):
+        """
+        Widget to select a range within a set maximum and minimum on a timeline
+
+        Parameters
+        ----------
+        minimum : float:
+            The minimum value to allow on the timeline for selection
+        maximum : float:
+            The maximum value to allow on the timeline for selection
+        values_to_mark : list[float]
+            Timeline values to place markers at
+        """
         super().__init__()
         self._range_slider = self._build_range_slider(minimum, maximum, values_to_mark)
         self._select_button = self._build_select_button(text="Select")
@@ -529,11 +541,44 @@ class RangeSelector(base_layouts.HorizontalLayout):
         self.addWidget(self._select_button, alignment=constants.align_right)
 
     def _build_range_slider(self, minimum, maximum, values_to_mark=[]):
+        """
+        Builds the timeline slider to select ranges from
+
+        Parameters
+        ----------
+        minimum : float:
+            The minimum value to allow on the timeline for selection
+        maximum : float:
+            The maximum value to allow on the timeline for selection
+        values_to_mark : list[float]
+            Timeline values to place markers at
+
+        Returns
+        -------
+        RangeSlider
+            The slider
+
+        """
         _widget = RangeSlider(minimum, maximum, values_to_mark)
         return _widget
 
     def _build_select_button(self, text):
+        """
+        Builds a button to commit the selected range
+
+        Parameters
+        ----------
+        text : str
+            Text to display on button
+
+        Returns
+        -------
+        base_widgets.Button
+            The new button
+
+        """
         _widget = base_widgets.Button(text=text)
+        _widget.setIcon(icons.checkbox_checked)
         _widget.clicked.connect(self.selectButtonClicked)
         return _widget
 
@@ -544,7 +589,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
 
 
 class RangeElement(base_layouts.HorizontalLayout):
-    deleted = QtCore.Signal()
+    deleted = QtCore.Signal(object)
 
     def __init__(self, min, max):
         super().__init__()
@@ -575,8 +620,8 @@ class RangeElement(base_layouts.HorizontalLayout):
 
     @QtCore.Slot()
     def _delete(self):
-        self.deleted.emit()
-        self.close()
+        self.deleted.emit(self)
+        self.deleteLater()
 
 
 
@@ -584,12 +629,29 @@ class RangeListEditor(base_layouts.VerticalScrollArea):
     rangeListChanged = QtCore.Signal()
 
     def __init__(self, ranges=[]):
+        """
+        Widget to manage a list of ranges
+
+        Parameters
+        ----------
+        ranges : list[list[float, float]]
+            The list of ranges to display
+        """
         super().__init__()
         self._range_widgets = []
         self.addStretch(1)
         self.addRanges(ranges)
 
     def ranges(self):
+        """
+        The ranges currently being displayed
+
+        Returns
+        -------
+        list[list[float, float]]
+            List of the ranges
+
+        """
         _range_list = []
         for _range_widget in self._range_widgets:
             _range = _range_widget.range()
@@ -598,26 +660,46 @@ class RangeListEditor(base_layouts.VerticalScrollArea):
 
     def addRange(self, range):
         """
-        Builds a widet to display the given range and adds it
+        Builds a widget to display the given range and adds it
 
         Parameters
         ----------
-        range
-
-        Returns
-        -------
+        range : list[float, float]
+            Range to add to list
 
         """
         _range_editor = RangeElement(range[0], range[1])
-        _range_editor.deleted.connect(self.rangeListChanged.emit)
+        _range_editor.deleted.connect(self.removeRange)
         self._range_widgets.append(_range_editor)
         self.addWidget(_range_editor)
         self.rangeListChanged.emit()
 
+    def removeRange(self, range_widget):
+        """
+        Removes the given range widget
+
+        Parameters
+        ----------
+        range_widget : RangeElement
+            The range element to remove
+
+        """
+        _index = self._range_widgets.index(range_widget)
+        self._range_widgets.pop(_index)
+        self.rangeListChanged.emit()
+
     def addRanges(self, ranges):
+        """
+        Adds a list of ranges to the display
+
+        Parameters
+        ----------
+        ranges : list[list[float, float]]
+            Ranges to add to display
+
+        """
         for _range in ranges:
             self.addRange(_range)
-        self.rangeListChanged
 
 
 
@@ -625,6 +707,18 @@ class RangeListSelector(base_layouts.VerticalLayout):
     rangeListChanged = QtCore.Signal(object)
 
     def __init__(self, minimum, maximum, range_list=[], values_to_mark=[]):
+        """
+        Widget to select a range within a set maximum and minimum on a timeline
+
+        Parameters
+        ----------
+        minimum : float:
+            The minimum value to allow on the timeline for selection
+        maximum : float:
+            The minimum value to allow on the timeline for selection
+        range_list
+        values_to_mark
+        """
         super().__init__()
 
         self._range_selector = self._build_range_selector(minimum, maximum, values_to_mark)

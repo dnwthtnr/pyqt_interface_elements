@@ -18,7 +18,7 @@ from pyqt_interface_elements import (
 class AbstractAttributeEntry(base_layouts.HorizontalLayout):
     valueEdited = QtCore.Signal(object)
 
-    def __init__(self, attribute_name, attribute_value):
+    def __init__(self, attribute_name, attribute_value, *args, **kwargs):
         super().__init__(spacing=15)
         self.title_label = self.build_attribute_name_label(attribute_name)
 
@@ -78,6 +78,7 @@ class LineEditAttributeEditor(AbstractAttributeEntry):
             return True
         return False
 
+
 class FilepathDisplayAttributeEditor(AbstractAttributeEntry):
 
     def __int__(self, attribute_name, attribute_value):
@@ -98,6 +99,7 @@ class FilepathDisplayAttributeEditor(AbstractAttributeEntry):
         if not os.path.isfile(value):
             return False
         return True
+
 
 class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
 
@@ -121,6 +123,7 @@ class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
             return False
         return True
 
+
 class LargeListAttributeEditor(AbstractAttributeEntry):
 
     def __int__(self, attribute_name, attribute_value):
@@ -140,6 +143,7 @@ class LargeListAttributeEditor(AbstractAttributeEntry):
             return False
 
         return True
+
 
 class LargeListTooltipAttributeEditor(AbstractAttributeEntry):
 
@@ -164,10 +168,8 @@ class LargeListTooltipAttributeEditor(AbstractAttributeEntry):
         if False in _contents_list:
             return False
 
-
-
-
         return True
+
 
 class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
 
@@ -190,6 +192,7 @@ class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
             return False
         else:
             return True
+
 
 class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
 
@@ -237,17 +240,18 @@ class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
 
         return True
 
+
 class RangeSliderAttributeEditor(AbstractAttributeEntry):
-    timeLineRangeQuery = QtCore.Signal(object)
-    timeLineMarkersQuery = QtCore.Signal(object)
 
     def __int__(self, attribute_name, attribute_value):
-        # self.timeLineRangeQuery.emit(self)
-        # self.timeLineMarkersQuery.emit(self)
         super().__init__(attribute_name, attribute_value)
 
     def attribute_editor(self, attribute_value):
-        _widget = slider.RangeListSelector(minimum=1, maximum=100, range_list=attribute_value, values_to_mark=[1, 34])
+        timeline_range = attribute_value[1]
+        timeline_markers = attribute_value[2]
+        value = attribute_value[0]
+        _widget = slider.RangeListSelector(minimum=timeline_range[0], maximum=timeline_range[1],
+                                           range_list=value, values_to_mark=timeline_markers)
         _widget.rangeListChanged.connect(self.valueEdited.emit)
         return _widget
 
@@ -288,12 +292,11 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         return True
 
 
-
-
 class AbstractEntryHolder(base_layouts.VerticalLayout):
     valueChanged = QtCore.Signal(str, object)
 
-    def __init__(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type=True, attribute_title_width=150, margins=[0, 0, 0, 0], spacing=0):
+    def __init__(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type=True, attribute_title_width=150,
+                 margins=[0, 0, 0, 0], spacing=0):
         super().__init__(margins, spacing)
         self.attribute_entries = []
 
@@ -313,7 +316,7 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
             if _attribute_entry is None:
                 continue
             _attribute_entry.set_title_fixed_width(attribute_title_width)
-            _attribute_entry.valueEdited.connect( partial(self.valueChanged.emit, _attribute_name) )
+            _attribute_entry.valueEdited.connect(partial(self.valueChanged.emit, _attribute_name))
             self.addWidget(_attribute_entry)
             self.attribute_entries.append(_attribute_entry)
         self.addStretch(1)
@@ -325,7 +328,6 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
 
         return _attribute_dictionary
 
-
     def create_attribute_entry(self, attribute_name, attribute_value, attribute_mapping_dictionary, map_by_type):
         if map_by_type is True:
             return self.create_attribute_entry_by_type(attribute_name, attribute_value, attribute_mapping_dictionary)
@@ -335,7 +337,6 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
     def create_attribute_entry_by_type(self, attribute_name, attribute_value, attribute_mapping_dictionary):
         _entry = attribute_mapping_dictionary[type(attribute_value)]
         return _entry(attribute_name, attribute_value)
-
 
     def get_attribute_entry(self, attribute_name):
         for _entry in self.attribute_entries:
@@ -354,15 +355,12 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
 
         self.replace_entry(_entry, _new_entry)
 
-
-
     def replace_entry(self, entry, newEntry):
         self.replace_widget(widget=entry, newWidget=newEntry)
 
         _index = self.attribute_entries.index(entry)
         self.attribute_entries.pop(_index)
         self.attribute_entries.insert(_index, newEntry)
-
 
 
 if __name__ == "__main__":
