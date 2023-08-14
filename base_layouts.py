@@ -250,8 +250,9 @@ class HorizontalScrollArea(ScrollArea):
 
 class Splitter(QtWidgets.QSplitter):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, orientation, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.setOrientation(orientation)
 
 
 class TabWidget(QtWidgets.QTabWidget):

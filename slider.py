@@ -199,32 +199,9 @@ class RangeSlider(base_widgets.Slider):
 
         _selection_rectangle = QtCore.QRect(_top_left, _bottom_right)
 
-        _color = QtGui.QColor(155, 155, 155, 255)
+        _color = QtGui.QColor(155, 155, 155, 150)
 
         painter.fillRect(_selection_rectangle, _color)
-        # _selection_rectangle = QtCore.QRect(QtCore.QPoint(0, 100), QtCore.QPoint(500, 0))
-
-        # _pen = QtGui.QPen()
-        # _pen.setColor(QtCore.Qt.blue)
-        #
-        # _brush = QtGui.QBrush()
-        # _brush.setColor(QtCore.Qt.blue)
-        # # _brush
-        #
-        # painter.setPen(_pen)
-        # painter.setBrush(_brush)
-        #
-        # _opt = QtWidgets.QStyleOptionSlider()
-        # self.initStyleOption(_opt)
-        # _opt.subControls = QtWidgets.QStyle.SC_SliderGroove
-        # # print(_opt.rect)
-        # _opt.rect = _selection_rectangle
-        # print(_selection_rectangle)
-
-
-        #TODO: style option for rectangle and set it as the region. then draw with the given style and painter
-
-        # style.drawComplexControl(QtWidgets.QStyle.CC_Slider, _opt, painter, self)
 
     def paintMarkers(self, painter, style):
         """
@@ -247,13 +224,13 @@ class RangeSlider(base_widgets.Slider):
 
             _rect = QtCore.QRect(_top_left, _bottom_right)
 
-            _color = QtGui.QColor(255, 10, 20, 130)
+            _color = QtGui.QColor(255, 10, 20, 150)
 
             painter.fillRect(_rect, _color)
 
 
     def paintTickMarks(self, painter, style):
-        _multiple_of = 2
+        _multiple_of = 20
         _draw_number = False
         for _value in range(self.maximum()-self.minimum()):
 
@@ -275,9 +252,9 @@ class RangeSlider(base_widgets.Slider):
 
             painter.fillRect(_rect, _color)
 
-            if _draw_number is False:
-                _draw_number = True
-                continue
+            # if _draw_number is False:
+            #     _draw_number = True
+            #     continue
 
             painter.drawText(QtCore.QPoint(_pixel_value+6, _bottom-1), str(_value))
             _draw_number = False
@@ -560,6 +537,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
 
         """
         _widget = RangeSlider(minimum, maximum, values_to_mark)
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         return _widget
 
     def _build_select_button(self, text):
@@ -579,6 +557,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
         """
         _widget = base_widgets.Button(text=text)
         _widget.setIcon(icons.checkbox_checked)
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         _widget.clicked.connect(self.selectButtonClicked)
         return _widget
 
@@ -641,6 +620,7 @@ class RangeListEditor(base_layouts.VerticalScrollArea):
         self._range_widgets = []
         self.addStretch(1)
         self.addRanges(ranges)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
     def ranges(self):
         """
@@ -703,7 +683,7 @@ class RangeListEditor(base_layouts.VerticalScrollArea):
 
 
 
-class RangeListSelector(base_layouts.VerticalLayout):
+class RangeListSelector(base_layouts.Splitter):
     rangeListChanged = QtCore.Signal(object)
 
     def __init__(self, minimum, maximum, range_list=[], values_to_mark=[]):
@@ -719,13 +699,14 @@ class RangeListSelector(base_layouts.VerticalLayout):
         range_list
         values_to_mark
         """
-        super().__init__()
+        super().__init__(orientation=constants.vertical)
 
         self._range_selector = self._build_range_selector(minimum, maximum, values_to_mark)
         self._range_list_editor = self._build_range_list_editor(range_list)
 
         self.addWidget(self._range_selector)
         self.addWidget(self._range_list_editor)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
     def ranges(self):
         return self._range_list_editor.ranges()

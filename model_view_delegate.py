@@ -239,6 +239,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         """
         _nodes = []
         for item_key in list(dictionary.keys()):
+            print(item_key)
             _item_dictionary = dictionary[item_key]
             _node = Node(_item_dictionary)
             _nodes.append(_node)
@@ -375,10 +376,9 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
             if _node != self.root_node:
                 if index.column() == 0:
                     return _node.display_name
-                # if index.column() == 1:
-                #     return _node.type
                 if index.column() == 1:
                     return _node.animation_range
+
         if role == QtCore.Qt.EditRole:
             _node = index.internalPointer()
             if _node != self.root_node:
@@ -661,7 +661,17 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
         _model = self.model()
 
         _current_index = self.selectionModel().currentIndex()
-        _data = _model.data(_model.index( _current_index.row(), 0, _model.parent(_current_index)), role=QtCore.Qt.EditRole)
+
+        _selected_model_index = _model.index(
+            _current_index.row(),
+            0,
+            _model.parent(_current_index)
+        )
+        _data = _model.data(
+            _selected_model_index,
+            role=QtCore.Qt.EditRole
+        )
+
         self.SelectionChanged.emit(_data)
 
     def current_selection(self):

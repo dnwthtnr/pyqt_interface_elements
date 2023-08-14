@@ -59,9 +59,16 @@ class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
     def build_lineedit(self, filepath):
         filepath = filepath if os.path.exists(filepath) else ""
         _line_edit = base_widgets.Line_Edit(text=filepath)
+        _line_edit.setReadOnly(True)
         _line_edit.textEdited.connect(self.textEdited.emit)
         self.FileSelected.connect(_line_edit.setText)
         return _line_edit
+
+    def set_display_path(self, filepath):
+        if os.path.exists(filepath) is False:
+            return
+
+        self.line_edit.setText(filepath)
 
     def build_button(self):
         _button = base_widgets.Tool_Button()
@@ -80,6 +87,10 @@ class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
         )
         _selected_file = _selection_item[0]
         logger.debug(f'File selected {_selected_file}')
+
+        if os.path.exists(_selected_file) is False:
+            return
+
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
 
@@ -181,6 +192,7 @@ class ListToolTipDisplay(base_widgets.Line_Edit):
         super().__init__(*args, **kwargs)
         self.setList(_list)
         self.setAlignment(constants.align_left)
+        self.setReadOnly(True)
 
     def list(self):
         _tooltip_text = self.toolTip()
@@ -188,6 +200,6 @@ class ListToolTipDisplay(base_widgets.Line_Edit):
         return _list
 
     def setList(self, _list):
-        self.setText(f"{len(_list)} Items")
-        self.setToolTip("".join(_list))
+        self.setText(f"{len(_list)} Children")
+        # self.setToolTip("".join(_list))
 
