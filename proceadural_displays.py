@@ -1,5 +1,5 @@
 import os.path
-from PySide2 import QtCore
+from PySide2 import QtCore, QtWidgets
 from functools import partial
 from pyqt_interface_elements import (
     base_layouts,
@@ -58,6 +58,12 @@ class AbstractAttributeEntry(base_layouts.HorizontalLayout):
             return
         self.attribute_editor_widget.setReadOnly(enabled)
 
+    def setAttributeValue(self, newvalue):
+        self._setAttributeWidgetValue(self.attribute_editor_widget, newvalue)
+
+    def _setAttributeWidgetValue(self, attribute_editor, newvalue):
+        raise NotImplementedError(f"You must implement {self.__class__.__name__}.setAttributeValue()")
+
 
 class LineEditAttributeEditor(AbstractAttributeEntry):
     IDENTIFIER = str
@@ -77,6 +83,33 @@ class LineEditAttributeEditor(AbstractAttributeEntry):
         if isinstance(value, str):
             return True
         return False
+
+    def _setAttributeWidgetValue(self, attribute_editor, newvalue):
+        attribute_editor.setText(newvalue)
+
+
+class NameEditorAttributeEditor(AbstractAttributeEntry):
+    IDENTIFIER = str
+
+    def __int__(self, attribute_name, attribute_value):
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = line_edits.NameEditor(name=attribute_value)
+        _widget.textEdited.connect(self.valueEdited.emit)
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        return attribute_editor.text()
+
+    def identifier(self, value):
+        if isinstance(value, str):
+            return True
+        return False
+
+    def _setAttributeWidgetValue(self, attribute_editor, newvalue):
+        attribute_editor.setText(newvalue)
 
 
 class FilepathDisplayAttributeEditor(AbstractAttributeEntry):

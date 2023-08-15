@@ -267,6 +267,7 @@ class ExpandWhenClicked(HorizontalLayout):
         super().__init__(margins=margins, spacing=spacing, *args, **kwargs)
 
         self.dropdown = self.build_dropdown_button()
+        # self.addStretch(1)
 
         self.collapsed_layout = self.build_collapsed()
         self.expanded_layout = self.build_expanded(margins, spacing)
@@ -275,7 +276,7 @@ class ExpandWhenClicked(HorizontalLayout):
 
         _layouts = VerticalLayout()
         _layouts.addWidget(self.collapsed_layout, alignment=constants.align_top)
-        _layouts.addWidget(self.expanded_layout)
+        _layouts.addWidget(self.expanded_layout, stretch=1)
 
         _bar_layout = HorizontalLayout()
         _bar_layout.addWidget(self.dropdown, alignment=constants.align_left | constants.align_top)
@@ -299,6 +300,7 @@ class ExpandWhenClicked(HorizontalLayout):
 
     def build_expanded(self, margins, spacing):
         _layout = VerticalLayout(margins=margins, spacing=spacing)
+        _layout.addStretch(1)
         _layout.hide()
         return _layout
 

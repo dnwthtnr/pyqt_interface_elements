@@ -1,5 +1,5 @@
 
-from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons
+from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons, buttons, modal_dialog
 from PySide2 import QtCore, QtWidgets, QtGui
 from functools import partial
 import os
@@ -203,3 +203,106 @@ class ListToolTipDisplay(base_widgets.Line_Edit):
         self.setText(f"{len(_list)} Children")
         # self.setToolTip("".join(_list))
 
+
+class LabelEditor(base_widgets.Label):
+
+    def __init__(self, update_text=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update_text = update_text
+        self._line_edit = base_widgets.Line_Edit()
+
+    def enter_editing(self):
+
+        # _rect_local = self.rect()
+        #
+        # self._line_edit.setGeometry(self.rect())
+        #
+        # self._line_edit.move(self.mapToGlobal(self.pos()))
+
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self._line_edit.setWindowFlag(QtCore.Qt.FramelessWindowHint, True)
+        self._line_edit.setWindowFlag(QtCore.Qt.Tool, True)
+        self._line_edit.setText(self.text())
+        self._line_edit.show()
+        return
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._line_edit.setGeometry(self.rect())
+        self._line_edit.move(self.mapToGlobal(self.pos()))
+
+    def exit_editing(self):
+        self._line_edit.hide()
+        if self.update_text is True:
+            self.setText(self._line_edit.text())
+            return
+
+        return self._line_edit.text()
+
+
+class NameEditor(base_layouts.HorizontalLayout):
+    textEdited = QtCore.Signal(str)
+
+    def __init__(self, name):
+        super().__init__()
+        self._label = self._build_label(name)
+        self._button = self._build_button()
+
+        self.addWidget(self._label, stretch=1)
+        self.addWidget(self._button)
+
+
+    def text(self):
+        return self._label.text()
+
+    def setText(self, text):
+        self._label.setText(text)
+
+
+    def _build_label(self, name):
+        _widget = LabelEditor(text=name, update_text=False)
+        return _widget
+
+    def _build_button(self):
+        _widget = buttons.ToggleIconButton(enabled_icon=icons.open_file, disabled_icon=icons.checkbox_checked)
+        _widget.disabled.connect(self.exit_edit_mode)
+        _widget.enabled.connect(self.enter_edit_mode)
+        return _widget
+
+    def enter_edit_mode(self):
+        self._label.enter_editing()
+        return
+
+    def exit_edit_mode(self):
+        _new_name = self._label.exit_editing()
+        _old_name = self._label.text()
+        if _new_name == _old_name:
+            return
+
+        self._name_change_confirmation(_old_name, _new_name)
+
+
+    def _name_change_confirmation(self, old_name, new_name):
+        self._confirmation_dialogue = modal_dialog.ConfirmDialogue(
+            display_text=f'Are you sure you want to rename {old_name} to {new_name}?'
+        )
+        self._confirmation_dialogue.confirmed.connect(partial(self.textEdited.emit, new_name))
+
+        self._confirmation_dialogue.show()
+
+
+if __name__ == "__main__":
+    from pyqt_interface_elements import base_windows
+    import sys
+    from animation_exporter.utility_resources import settings
+    from PySide2 import QtWidgets
+
+
+    _app = QtWidgets.QApplication(sys.argv)
+    _view = NameEditor("name")
+
+    # _win = base_windows.Main_Window()
+    # _win.setCentralWidget(_view)
+    _view.show()
+
+    sys.exit(_app.exec_())
