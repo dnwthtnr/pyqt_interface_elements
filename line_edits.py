@@ -142,6 +142,9 @@ class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
 
+    def set_directory(self, directory):
+        self.line_edit.setText(directory)
+
 
 class TwoDimensionalFloat(base_layouts.HorizontalLayout):
     valueChanged = QtCore.Signal(list)

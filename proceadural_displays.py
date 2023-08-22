@@ -18,7 +18,10 @@ from pyqt_interface_elements import (
 class AbstractAttributeEntry(base_layouts.HorizontalLayout):
     valueEdited = QtCore.Signal(object)
 
-    def __init__(self, attribute_name, attribute_value, *args, **kwargs):
+    AutoValueUpdatePolicy = "autoupdate"
+    SendValueUpdateRequestPolicy = "requestupdate"
+
+    def __init__(self, attribute_name, attribute_value, update_policy=AutoValueUpdatePolicy, *args, **kwargs):
         super().__init__(spacing=15)
         self.title_label = self.build_attribute_name_label(attribute_name)
 
@@ -68,7 +71,7 @@ class AbstractAttributeEntry(base_layouts.HorizontalLayout):
 class LineEditAttributeEditor(AbstractAttributeEntry):
     IDENTIFIER = str
 
-    def __int__(self, attribute_name, attribute_value):
+    def __int__(self, attribute_name, attribute_value, ):
         super().__init__(attribute_name, attribute_value)
 
     def attribute_editor(self, attribute_value):
@@ -80,9 +83,10 @@ class LineEditAttributeEditor(AbstractAttributeEntry):
         return attribute_editor.text()
 
     def identifier(self, value):
-        if isinstance(value, str):
-            return True
-        return False
+        if not isinstance(value, str):
+            return False
+
+        return True
 
     def _setAttributeWidgetValue(self, attribute_editor, newvalue):
         attribute_editor.setText(newvalue)
@@ -104,9 +108,10 @@ class NameEditorAttributeEditor(AbstractAttributeEntry):
         return attribute_editor.text()
 
     def identifier(self, value):
-        if isinstance(value, str):
-            return True
-        return False
+        if not isinstance(value, str):
+            return False
+
+        return True
 
     def _setAttributeWidgetValue(self, attribute_editor, newvalue):
         attribute_editor.setText(newvalue)
@@ -155,6 +160,9 @@ class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
         if not os.path.isdir(value):
             return False
         return True
+
+    def _setAttributeWidgetValue(self, attribute_editor, newvalue):
+        attribute_editor.setText(newvalue)
 
 
 class LargeListAttributeEditor(AbstractAttributeEntry):
@@ -325,32 +333,67 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         return True
 
 
-class AbstractEntryHolder(base_layouts.VerticalLayout):
+class AttributeHolder(base_layouts.Layout):
     valueChanged = QtCore.Signal(str, object)
 
-    def __init__(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type=True, attribute_title_width=150,
-                 margins=[0, 0, 0, 0], spacing=0):
-        super().__init__(margins, spacing)
+    def __init__(
+            self,
+            attribute_dictionary,
+            attribute_mapper,
+            map_by_type=True,
+            map_by_identity=False,
+            attributes_to_hide=[],
+            non_editable_attributes=[],
+            attribute_title_width=150,
+            margins=[0, 0, 0, 0],
+            spacing=0,
+            orientation=constants.vertical
+    ):
+        super().__init__(
+            layout_orientation=orientation,
+            margins=margins,
+            spacing=spacing
+        )
         self.attribute_entries = []
 
-        self.attribute_mapping_dictionary = attribute_mapping_dictionary
-        self.map_by_type = map_by_type
+        if map_by_identity is True:
+            if not isinstance(attribute_mapper, list):
+                raise TypeError('When mapping by identity attribute mapper must be a a list of callable AbstractAttributeEntry subclasses')
+            for _item in attribute_mapper:
+                if not issubclass(_item, AbstractAttributeEntry):
+                    raise TypeError('When mapping by identity attribute mapper must be a a list of callable AbstractAttributeEntry subclasses')
 
-        self._build(attribute_dictionary, self.attribute_mapping_dictionary, self.map_by_type, attribute_title_width)
 
-    def _build(self, attribute_dictionary, attribute_mapping_dictionary, map_by_type, attribute_title_width):
+        self._build(
+            attribute_dictionary=attribute_dictionary,
+            attribute_mapper=attribute_mapper,
+            map_by_identity=map_by_identity,
+            map_by_type=map_by_type,
+            attribute_title_width=attribute_title_width,
+            non_editable_attributes=non_editable_attributes,
+            attributes_to_hide=attributes_to_hide
+        )
+
+    def _build(self, attribute_dictionary, attribute_mapper, map_by_identity, map_by_type, attribute_title_width, non_editable_attributes, attributes_to_hide):
         for _attribute_name, _attribute_value in attribute_dictionary.items():
             _attribute_entry = self.create_attribute_entry(
-                _attribute_name,
-                _attribute_value,
-                attribute_mapping_dictionary,
-                map_by_type
+                attribute_name=_attribute_name,
+                attribute_value=_attribute_value,
+                attribute_mapper=attribute_mapper,
+                map_by_identity=map_by_identity,
+                map_by_type=map_by_type
             )
             if _attribute_entry is None:
                 continue
             _attribute_entry.set_title_fixed_width(attribute_title_width)
             _attribute_entry.valueEdited.connect(partial(self.valueChanged.emit, _attribute_name))
             self.addWidget(_attribute_entry)
+
+            if _attribute_name in attributes_to_hide:
+                _attribute_entry.hide()
+            if _attribute_name in non_editable_attributes:
+                _attribute_entry.setReadOnly(True)
+
             self.attribute_entries.append(_attribute_entry)
         self.addStretch(1)
 
@@ -361,14 +404,23 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
 
         return _attribute_dictionary
 
-    def create_attribute_entry(self, attribute_name, attribute_value, attribute_mapping_dictionary, map_by_type):
+    def create_attribute_entry(self, attribute_name, attribute_value, attribute_mapper, map_by_identity, map_by_type):
+        if map_by_identity is True:
+            return self.create_attribute_entry_by_identity(attribute_name, attribute_value, attribute_mapper)
         if map_by_type is True:
-            return self.create_attribute_entry_by_type(attribute_name, attribute_value, attribute_mapping_dictionary)
+            return self.create_attribute_entry_by_type(attribute_name, attribute_value, attribute_mapper)
         raise NotImplementedError(
             f"You must implement {self.__class__.__name__}.map_attribute() when not automapping by type.")
 
-    def create_attribute_entry_by_type(self, attribute_name, attribute_value, attribute_mapping_dictionary):
-        _entry = attribute_mapping_dictionary[type(attribute_value)]
+    def create_attribute_entry_by_identity(self, attribute_name, attribute_value, attribute_mapper):
+        for _entry_type in attribute_mapper:
+            if _entry_type.identifier(self, value=attribute_value) is True:
+                _entry = _entry_type(attribute_name, attribute_value)
+                return _entry
+        return None
+
+    def create_attribute_entry_by_type(self, attribute_name, attribute_value, attribute_mapper):
+        _entry = attribute_mapper[type(attribute_value)]
         return _entry(attribute_name, attribute_value)
 
     def get_attribute_entry(self, attribute_name):
@@ -382,7 +434,7 @@ class AbstractEntryHolder(base_layouts.VerticalLayout):
         _new_entry = self.create_attribute_entry(
             attribute_name=attribute_name,
             attribute_value=attribute_value,
-            attribute_mapping_dictionary=self.attribute_mapping_dictionary,
+            attribute_mapper=self.attribute_mapper,
             map_by_type=self.map_by_type
         )
 
