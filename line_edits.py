@@ -1,5 +1,5 @@
 
-from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons, buttons, modal_dialog
+from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons, buttons, dialogs
 from PySide2 import QtCore, QtWidgets, QtGui
 from functools import partial
 import os
@@ -93,6 +93,86 @@ class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
 
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
+
+
+class FileSelectOrCreateLineEdit(base_layouts.HorizontalLayout):
+    FileSelected = QtCore.Signal(str)
+    textEdited = QtCore.Signal(str)
+
+    def __init__(self, filepath, new_file_text="New File", extension=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.new_file_text = new_file_text
+        self.extension = extension
+        self.filepath = filepath
+
+        self.build_widget(filepath)
+
+    def build_widget(self, filepath):
+        self.line_edit = self.build_lineedit(filepath)
+        self.button = self.build_button()
+
+        self.addWidget(self.line_edit)
+        self.addWidget(self.button, alignment=constants.align_right)
+
+
+    def build_lineedit(self, filepath):
+        filepath = filepath if os.path.exists(filepath) else ""
+        _line_edit = base_widgets.Line_Edit(text=filepath)
+        _line_edit.setReadOnly(True)
+        _line_edit.textEdited.connect(self.textEdited.emit)
+        self.FileSelected.connect(_line_edit.setText)
+        return _line_edit
+
+    def _build_new_button(self, text, extension='.json'):
+        _widget = base_widgets.Button(text=text)
+        return _widget
+
+    def set_display_path(self, filepath):
+        if os.path.exists(filepath) is False:
+            return
+
+        self.line_edit.setText(filepath)
+
+    def build_button(self):
+        _button = base_widgets.Tool_Button()
+        _button.setStyleSheet("border: none;")
+        _button.setIcon(icons.open_file)
+        _button.clicked.connect(self.open_file_dialogue)
+        return _button
+
+    def open_file_dialogue(self):
+        _file_browser = base_windows.File_Dialogue()
+
+        _new_button = self._build_new_button(text=self.new_file_text)
+        _l = QtWidgets.QVBoxLayout()
+        _l.addWidget(_file_browser)
+        _l.addWidget(_new_button)
+
+        _file_browser.fileSelected.connect(self._file_selected)
+        # print(_w)
+
+        self._w = QtWidgets.QWidget()
+        self._w.setLayout(_l)
+
+        self._w.show()
+
+        # _selection_item = _file_browser.getOpenFileName(
+        #     parent=self,
+        #     caption=("Select Scene"),
+        #     dir="/home",
+        #     # filter=("*.ma, *.mb, *.fbx")
+        # )
+        # _selected_file = _selection_item[0]
+        # logger.debug(f'File selected {_selected_file}')
+        #
+        # if os.path.exists(_selected_file) is False:
+        #     return
+        #
+        # self.filepath = _selected_file
+        # self.FileSelected.emit(_selected_file)
+
+    def _file_selected(self, file):
+        print(file)
 
 
 class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
@@ -267,7 +347,7 @@ class NameEditor(base_layouts.HorizontalLayout):
         return _widget
 
     def _build_button(self):
-        _widget = buttons.ToggleIconButton(enabled_icon=icons.open_file, disabled_icon=icons.checkbox_checked)
+        _widget = buttons.ToggleIconButton(enabled_icon=icons.close, disabled_icon=icons.edit_text)
         _widget.disabled.connect(self.exit_edit_mode)
         _widget.enabled.connect(self.enter_edit_mode)
         return _widget
@@ -302,7 +382,7 @@ if __name__ == "__main__":
 
 
     _app = QtWidgets.QApplication(sys.argv)
-    _view = NameEditor("name")
+    _view = FileSelectOrCreateLineEdit(r"G:\\")
 
     # _win = base_windows.Main_Window()
     # _win.setCentralWidget(_view)

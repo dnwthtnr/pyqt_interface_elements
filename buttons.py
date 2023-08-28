@@ -36,17 +36,20 @@ class ToggleIconButton(base_widgets.Tool_Button):
         else:
             self.setIconState(True)
 
-    def setIconState(self, enabled):
+    def setIconState(self, enabled, silent=False):
         if enabled is False:
             self.setIcon(self.disabled_icon)
             self.enabledState = False
-            self.disabled.emit()
+            if silent is False:
+                self.disabled.emit()
         else:
             self.setIcon(self.enabled_icon)
             self.enabledState = True
-            self.enabled.emit()
+            if silent is False:
+                self.enabled.emit()
 
         self.toggleStateChanged.emit(enabled)
+
 
 
 class DropdownToggleButton(ToggleIconButton):

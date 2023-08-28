@@ -556,7 +556,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
 
         """
         _widget = base_widgets.Button(text=text)
-        _widget.setIcon(icons.checkbox_checked)
+        # _widget.setIcon(icons.plus)
         _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         _widget.clicked.connect(self.selectButtonClicked)
         return _widget
@@ -593,7 +593,7 @@ class RangeElement(base_layouts.HorizontalLayout):
 
     def _build_delete_button(self):
         _widget = base_widgets.Tool_Button()
-        _widget.setIcon(icons.close)
+        _widget.setIcon(icons.delete)
         _widget.clicked.connect(self._delete)
         return _widget
 

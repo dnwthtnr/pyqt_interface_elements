@@ -261,6 +261,7 @@ class TabWidget(QtWidgets.QTabWidget):
         super().__init__(*args, **kwargs)
 
 
+
 class ExpandWhenClicked(HorizontalLayout):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):

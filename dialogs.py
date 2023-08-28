@@ -51,4 +51,43 @@ class ConfirmDialogue(base_windows.Dialog):
         """
         self.close()
 
+class FileDialog(base_windows.Dialog):
+    
+    def __init__(self):
+        super().__init__()
 
+        self._file_browser = base_windows.File_Dialogue()
+        self._file_browser.fileSelected.connect(self._file_selected)
+
+        self._selected_file = None
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self._file_browser)
+        self.setLayout(self.layout)
+        self.resize(900, 700)
+
+    def addWidget(self, widget, *args, **kwargs):
+        self.layout.addWidget(widget, *args, **kwargs)
+
+
+    def _file_selected(self, file):
+        print(file)
+        self._selected_file = file
+
+        self.close()
+
+if __name__ == "__main__":
+    from pyqt_interface_elements import base_windows
+    import sys
+    from animation_exporter.utility_resources import settings
+    from PySide2 import QtWidgets
+
+    _app = QtWidgets.QApplication(sys.argv)
+    _view = FileDialog()
+    _view.addWidget(base_widgets.Button(text='Add New Queue'), alignment=constants.align_right)
+
+    # _win = base_windows.Main_Window()
+    # _win.setCentralWidget(_view)
+    _view.show()
+
+    sys.exit(_app.exec_())
