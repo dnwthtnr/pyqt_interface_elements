@@ -366,12 +366,99 @@ class NameEditor(base_layouts.HorizontalLayout):
 
 
     def _name_change_confirmation(self, old_name, new_name):
-        self._confirmation_dialogue = modal_dialog.ConfirmDialogue(
+        self._confirmation_dialogue = dialogs.ConfirmDialogue(
             display_text=f'Are you sure you want to rename {old_name} to {new_name}?'
         )
         self._confirmation_dialogue.confirmed.connect(partial(self.textEdited.emit, new_name))
 
         self._confirmation_dialogue.show()
+
+
+
+class BuildFileName(base_layouts.HorizontalLayout):
+    fileNameChosen = QtCore.Signal(str)
+
+    def __init__(self, extensions=['.txt', '.json'], title_text=None, title_label_widget=100, enter_button_width=100):
+        super().__init__()
+        self._extensions = extensions
+
+        _title_label = self._build_title_label(text=title_text)
+        self._enter_button = self._build_enter_button()
+        _name_editor_layout = self._build_name_editor_layout()
+
+        self.setExtensions(extensions)
+
+
+        self.addWidget(_title_label, alignment=constants.align_left)
+        self.addWidget(_name_editor_layout, stretch=1)
+        self.addWidget(self._enter_button, alignment=constants.align_right)
+
+    def _build_title_label(self, text):
+        if text is None:
+            return None
+        _widget = base_widgets.Label(text=text)
+        _widget.setMinimumWidth(100)
+        return _widget
+
+    def _build_name_editor_layout(self):
+        self._extension_combo = self._build_extension_combo()
+        self._file_name_line = self._build_file_name_line()
+
+        _layout = base_layouts.HorizontalLayout(margins=[0, 0, 10, 0])
+
+        _layout.addWidget(self._file_name_line)
+        _layout.addWidget(self._extension_combo, alignment=constants.align_right)
+        return _layout
+
+    def _build_extension_combo(self):
+        _widget = base_widgets.ComboBox()
+        _widget.addItems(self.extensions())
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        return _widget
+
+    def setExtensions(self, extensions):
+        """
+        Sets the available file extensions
+
+        Parameters
+        ----------
+        extensions : list[str]
+            list of file extension ['.txt', '.json', '.ect']
+
+        """
+        if not isinstance(extensions, list):
+            raise TypeError(f'Given extensions value must be of type: list not {type(extensions)}')
+
+        self._extension_combo.clear()
+        self._extension_combo.addItems(extensions)
+
+        if len(extensions) == 1:
+            self._extension_combo.setEnabled(False)
+            return
+
+        self._extension_combo.setEnabled(True)
+
+    def _build_file_name_line(self):
+        _widget = base_widgets.Line_Edit()
+        _widget.setPlaceholderText(f'Enter File Name...')
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        return _widget
+
+    def _build_enter_button(self, text="Create"):
+        _widget = base_widgets.Button(text=text)
+        _widget.clicked.connect(self._enter_button_clicked)
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        return _widget
+
+    def _enter_button_clicked(self):
+        _extension = self._extension_combo.currentText()
+        _filename = self._file_name_line.text()
+
+        filename = _filename + _extension
+        self.fileNameChosen.emit(filename)
+
+    def extensions(self):
+        return self._extensions
 
 
 if __name__ == "__main__":

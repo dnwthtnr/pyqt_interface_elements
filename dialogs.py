@@ -1,9 +1,12 @@
 import logging
+import os.path
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-from pyqt_interface_elements import base_widgets, icons, base_windows, line_edits, base_layouts, constants
-from PySide2 import QtCore, QtWidgets
+import file_management
+from functools import partial
+from pyqt_interface_elements import base_widgets, icons, base_windows, line_edits, base_layouts, constants, proceadural_displays
+from PySide2 import QtCore, QtWidgets, QtGui
 
 
 class ChooseFilePath(base_windows.Dialog):
@@ -51,24 +54,62 @@ class ConfirmDialogue(base_windows.Dialog):
         """
         self.close()
 
+
 class FileDialog(base_windows.Dialog):
+    fileCreated = QtCore.Signal(str)
     
     def __init__(self):
         super().__init__()
+        _layout = QtWidgets.QVBoxLayout()
+        self.setLayout(_layout)
 
         self._file_browser = base_windows.File_Dialogue()
         self._file_browser.fileSelected.connect(self._file_selected)
 
         self._selected_file = None
 
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.addWidget(self._file_browser)
-        self.setLayout(self.layout)
+        self._toolbar = self._build_toolbar()
+
+        self.addWidget(self._file_browser, stretch=1)
+        self.addWidget(self._toolbar)
+
         self.resize(900, 700)
 
     def addWidget(self, widget, *args, **kwargs):
-        self.layout.addWidget(widget, *args, **kwargs)
+        self.layout().addWidget(widget, *args, **kwargs)
 
+    def addToolbarWidget(self, widget, *args, **kwargs):
+        self._toolbar.addWidget(widget, *args, **kwargs)
+
+    def setupAddFileButton(self, text='New File', title_text="New File:", icon=QtGui.QIcon(), file_extensions=['.json']):
+        """
+        Creates a button that when clicked will create a new file
+        Parameters
+        ----------
+        text
+        icon
+
+        Returns
+        -------
+
+        """
+        _button = line_edits.BuildFileName(extensions=file_extensions, title_text=title_text)
+        _button.fileNameChosen.connect(self.createFile)
+        self.addToolbarWidget(_button)
+
+    @QtCore.Slot('createFile')
+    def createFile(self, fileName):
+        _qdirectory = self._file_browser.directory()
+        _path = _qdirectory.path()
+        _new_path = file_management.generate_unique_file_name(_path, fileName)
+
+        file_management.create_file(_new_path)
+
+        _qdirectory.refresh()
+
+    def _build_toolbar(self):
+        _widget = base_layouts.HorizontalLayout(margins=[12, 0, 12, 0])
+        return _widget
 
     def _file_selected(self, file):
         print(file)
@@ -84,7 +125,7 @@ if __name__ == "__main__":
 
     _app = QtWidgets.QApplication(sys.argv)
     _view = FileDialog()
-    _view.addWidget(base_widgets.Button(text='Add New Queue'), alignment=constants.align_right)
+    _view.setupAddFileButton()
 
     # _win = base_windows.Main_Window()
     # _win.setCentralWidget(_view)

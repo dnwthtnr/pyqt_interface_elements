@@ -165,6 +165,7 @@ class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
         attribute_editor.setText(newvalue)
 
 
+
 class LargeListAttributeEditor(AbstractAttributeEntry):
 
     def __int__(self, attribute_name, attribute_value):
