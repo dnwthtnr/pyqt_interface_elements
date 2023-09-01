@@ -378,12 +378,13 @@ class NameEditor(base_layouts.HorizontalLayout):
 class BuildFileName(base_layouts.HorizontalLayout):
     fileNameChosen = QtCore.Signal(str)
 
-    def __init__(self, extensions=['.txt', '.json'], title_text=None, title_label_widget=100, enter_button_width=100):
+    def __init__(self, extensions=['.txt', '.json'], title_text=None, enter_text="Create", enter_icon=QtGui.QIcon(), title_width=100):
         super().__init__()
+        self._title_width = title_width
         self._extensions = extensions
 
         _title_label = self._build_title_label(text=title_text)
-        self._enter_button = self._build_enter_button()
+        self._enter_button = self._build_enter_button(icon=enter_icon, text=enter_text)
         _name_editor_layout = self._build_name_editor_layout()
 
         self.setExtensions(extensions)
@@ -393,11 +394,14 @@ class BuildFileName(base_layouts.HorizontalLayout):
         self.addWidget(_name_editor_layout, stretch=1)
         self.addWidget(self._enter_button, alignment=constants.align_right)
 
+    def title_width(self):
+        return self._title_width
+
     def _build_title_label(self, text):
         if text is None:
             return None
         _widget = base_widgets.Label(text=text)
-        _widget.setMinimumWidth(100)
+        _widget.setMinimumWidth(self.title_width())
         return _widget
 
     def _build_name_editor_layout(self):
@@ -444,8 +448,8 @@ class BuildFileName(base_layouts.HorizontalLayout):
         _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         return _widget
 
-    def _build_enter_button(self, text="Create"):
-        _widget = base_widgets.Button(text=text)
+    def _build_enter_button(self, text, icon):
+        _widget = base_widgets.Button(text=text, icon=icon)
         _widget.clicked.connect(self._enter_button_clicked)
         _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         return _widget

@@ -81,29 +81,34 @@ class FileDialog(base_windows.Dialog):
     def addToolbarWidget(self, widget, *args, **kwargs):
         self._toolbar.addWidget(widget, *args, **kwargs)
 
-    def setupAddFileButton(self, text='New File', title_text="New File:", icon=QtGui.QIcon(), file_extensions=['.json']):
+    def appendAddFileOption(self, text="New File:", icon=QtGui.QIcon(), file_extensions=['.json']):
         """
         Creates a button that when clicked will create a new file
+
         Parameters
         ----------
         text
         icon
+        file_extensions
 
         Returns
         -------
 
         """
-        _button = line_edits.BuildFileName(extensions=file_extensions, title_text=title_text)
+        _button = line_edits.BuildFileName(extensions=file_extensions, title_text=text)
         _button.fileNameChosen.connect(self.createFile)
         self.addToolbarWidget(_button)
 
     @QtCore.Slot('createFile')
     def createFile(self, fileName):
+        print('yes')
         _qdirectory = self._file_browser.directory()
         _path = _qdirectory.path()
         _new_path = file_management.generate_unique_file_name(_path, fileName)
 
         file_management.create_file(_new_path)
+
+        print('filecreated', _path, _new_path)
 
         _qdirectory.refresh()
 
@@ -125,10 +130,7 @@ if __name__ == "__main__":
 
     _app = QtWidgets.QApplication(sys.argv)
     _view = FileDialog()
-    _view.setupAddFileButton()
-
-    # _win = base_windows.Main_Window()
-    # _win.setCentralWidget(_view)
+    _view.appendAddFileOption()
     _view.show()
 
     sys.exit(_app.exec_())
