@@ -1,5 +1,5 @@
 
-from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons, buttons, dialogs
+from pyqt_interface_elements import constants, base_layouts, base_widgets, base_windows, icons, buttons, dialogs, visuals
 from PySide2 import QtCore, QtWidgets, QtGui
 from functools import partial
 import os
@@ -52,8 +52,11 @@ class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
         self.line_edit = self.build_lineedit(filepath)
         self.button = self.build_button()
 
+        self.button_holder = base_layouts.HorizontalLayout()
+        self.button_holder.addWidget(self.button)
+
         self.addWidget(self.line_edit)
-        self.addWidget(self.button, alignment=constants.align_right)
+        self.addWidget(self.button_holder, alignment=constants.align_right)
 
 
     def build_lineedit(self, filepath):
@@ -93,6 +96,16 @@ class File_Selection_Line_Edit(base_layouts.HorizontalLayout):
 
         self.filepath = _selected_file
         self.FileSelected.emit(_selected_file)
+
+    def setFileLoadingState(self, loading):
+        if loading is True:
+            self.button_holder.clear_layout()
+            _width = self.button.width()
+            self.button_holder.setMaximumWidth(_width)
+            self.button_holder.addWidget(visuals.loading_wheel())
+            return
+        self.button_holder.clear_layout()
+        self.button_holder.addWidget(self.button)
 
 
 class FileSelectOrCreateLineEdit(base_layouts.HorizontalLayout):
@@ -295,7 +308,6 @@ class LabelEditor(base_widgets.Label):
         self._line_edit = base_widgets.Line_Edit()
 
     def enter_editing(self):
-
         # _rect_local = self.rect()
         #
         # self._line_edit.setGeometry(self.rect())
@@ -314,6 +326,17 @@ class LabelEditor(base_widgets.Label):
         self._line_edit.setGeometry(self.rect())
         self._line_edit.move(self.mapToGlobal(self.pos()))
 
+    def moveEvent(self, event):
+        event.accept()
+        super().moveEvent(event)
+        self._line_edit.setGeometry(self.rect())
+        self._line_edit.move(self.mapToGlobal(self.pos()))
+
+    def paintEvent(self, arg__1):
+        super().paintEvent(arg__1)
+        self._line_edit.setGeometry(self.rect())
+        self._line_edit.move(self.mapToGlobal(self.pos()))
+
     def exit_editing(self):
         self._line_edit.hide()
         if self.update_text is True:
@@ -321,6 +344,151 @@ class LabelEditor(base_widgets.Label):
             return
 
         return self._line_edit.text()
+
+class EditLabel(base_widgets.Line_Edit):
+
+    def __init__(self, textAutoUpdate=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._textAutoUpdate = textAutoUpdate
+        self.setReadOnly(True)
+
+        self._cacheText = self.text()
+
+    def textAutoUpdate(self):
+        """
+        Whether the display text will be updated automatically on exit of editing
+
+        Returns
+        -------
+
+        """
+        return self._textAutoUpdate
+
+    def cacheCurrentText(self):
+        self._cacheText = self.text()
+
+    def getCachedText(self):
+        return self._cacheText
+
+    def setEditState(self, enabled):
+        if enabled is True:
+            self.setReadOnly(False)
+            self.setWindowModality(QtCore.Qt.ApplicationModal)
+            self.cacheCurrentText()
+            return
+
+        self.setReadOnly(True)
+        self.setWindowModality(QtCore.Qt.NonModal)
+
+        _edited_text = self.text()
+
+        if self.textAutoUpdate() is True:
+            self.setText(self.getCachedText())
+            return
+
+        self.setText(self.getCachedText())
+        return _edited_text
+
+    def setText(self, text):
+        super().setText(text)
+        self.cacheCurrentText()
+
+
+# class EditLabel(base_widgets.Label):
+#     _editState = False
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+#
+#
+#     def editState(self):
+#         return self._editState
+#
+#
+#     def paintEvent(self, event):
+#         """
+#
+#         Parameters
+#         ----------
+#         event : QtGui.QPaintEvent
+#
+#         """
+#         painter = QtGui.QPainter(self)
+#         style = QtWidgets.QApplication.style()
+#
+#         # event.accept()
+#
+#         if self.editState() is True:
+#             self._paintLabelEditor(painter=painter, style=style)
+#
+#         else:
+#             self._paintLabel(painter=painter, style=style)
+#
+#     def _paintLabel(self, painter, style):
+#         """
+#         Paints the label
+#
+#         Parameters
+#         ----------
+#         painter : QtGui.QPainter
+#         style : QtWidgets.QStyle
+#
+#         """
+#         style.drawItemText(
+#             painter,
+#             self.rect(),
+#             constants.align_center,
+#             style.standardPalette(),
+#             True,
+#             self.text()
+#         )
+#
+#     def _paintLabelEditor(self, painter, style):
+#         """
+#         Paints the label
+#
+#         Parameters
+#         ----------
+#         painter : QtGui.QPainter
+#         style : QtWidgets.QStyle
+#
+#         """
+#         style.drawComplexControl(QtWidgets.QStyle.SH_TextControl_FocusIndicatorTextCharFormat)
+#
+#         return
+#
+#     def keyPressEvent(self, event):
+#         """
+#
+#         Parameters
+#         ----------
+#         event : QtGui.QKeyEvent
+#
+#         """
+#
+#         _key = event.key()
+#         _text = self.text()
+#         event.accept()
+#         _text_key = event.text()
+#         _str_key = QtGui.QKeySequence(_key).toString()
+#
+#         new_text = self.text()
+#
+#         if _str_key == "Backspace":
+#             new_text = _text[:-1]
+#             print('bacjk', new_text)
+#         elif _str_key == "Spacebar":
+#             new_text = _text + ' '
+#         else:
+#             new_text = _text + _text_key
+#
+#         self.setText(new_text)
+#
+#         print(_str_key)
+#
+#
+#         return
 
 
 class NameEditor(base_layouts.HorizontalLayout):
@@ -336,14 +504,14 @@ class NameEditor(base_layouts.HorizontalLayout):
 
 
     def text(self):
-        return self._label.text()
+        return self._label.getCachedText()
 
     def setText(self, text):
         self._label.setText(text)
 
 
     def _build_label(self, name):
-        _widget = LabelEditor(text=name, update_text=False)
+        _widget = EditLabel(text=name, textAutoUpdate=False)
         return _widget
 
     def _build_button(self):
@@ -353,11 +521,12 @@ class NameEditor(base_layouts.HorizontalLayout):
         return _widget
 
     def enter_edit_mode(self):
-        self._label.enter_editing()
+        self._label.setEditState(True)
         return
 
     def exit_edit_mode(self):
-        _new_name = self._label.exit_editing()
+        _new_name = self._label.setEditState(False)
+        print(_new_name)
         _old_name = self._label.text()
         if _new_name == _old_name:
             return
@@ -473,7 +642,7 @@ if __name__ == "__main__":
 
 
     _app = QtWidgets.QApplication(sys.argv)
-    _view = FileSelectOrCreateLineEdit(r"G:\\")
+    _view = EditLabel(text='text')
 
     # _win = base_windows.Main_Window()
     # _win.setCentralWidget(_view)

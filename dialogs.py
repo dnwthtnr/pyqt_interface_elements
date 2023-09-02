@@ -57,9 +57,10 @@ class ConfirmDialogue(base_windows.Dialog):
 
 class FileDialog(base_windows.Dialog):
     fileCreated = QtCore.Signal(str)
+    fileSelected = QtCore.Signal(str)
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         _layout = QtWidgets.QVBoxLayout()
         self.setLayout(_layout)
 
@@ -117,8 +118,10 @@ class FileDialog(base_windows.Dialog):
         return _widget
 
     def _file_selected(self, file):
-        print(file)
+        if not os.path.exists(file):
+            return
         self._selected_file = file
+        self.fileSelected.emit(file)
 
         self.close()
 

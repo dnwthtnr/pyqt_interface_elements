@@ -650,6 +650,7 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
 
     def __init__(self):
         super().__init__()
+        self.setSelectionMode(QtWidgets.QTreeView.ExtendedSelection)
 
     def setModel(self, model):
         super().setModel(model)
@@ -662,17 +663,42 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
 
         _current_index = self.selectionModel().currentIndex()
 
-        _selected_model_index = _model.index(
-            _current_index.row(),
-            0,
-            _model.parent(_current_index)
-        )
-        _data = _model.data(
-            _selected_model_index,
-            role=QtCore.Qt.EditRole
-        )
+        _indexes = self.selectionModel().selectedIndexes()
+
+        print(len(_indexes) + 1)
+        print(_current_index in _indexes)
+
+        _selected_model_indexes = _indexes.append(_current_index)
+
+        model_data = None
+
+        for _selection_index in _selected_model_indexes:
+
+            _selected_model_index = _model.index(
+                _current_index.row(),
+                0,
+                _model.parent(_current_index)
+            )
+            _data = _model.data(
+                _selected_model_index,
+                role=QtCore.Qt.EditRole
+            )
+
+            if model_data is None:
+                model_data = _data
+                continue
+            else:
+                for _key in
+
+        # print(_data)
 
         self.SelectionChanged.emit(_data)
+
+
+    def combine_selection_data(self, currentData, newData):
+
+        # TODO IMPLEMENT THIS AS A WAY TO DEAL WITH THE DATA MODEL DATA QWUERIED FROM MULTIPLE ITEM SELECTIONS
+        raise NotImplementedError
 
     def current_selection(self):
         _model = self.model()

@@ -532,3 +532,177 @@ NEW SESSION
 
 
 2023-08-31 17:46:43,641 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 15:21:04,179 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 15:21:04,673 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 15:21:20,779 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 15:21:21,240 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 15:22:15,458 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 15:22:16,085 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:01:45,547 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:01:46,604 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:03:16,456 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:03:16,950 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:04:26,246 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:04:26,704 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:04:58,298 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:04:58,759 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:05:58,172 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:05:58,631 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:06:30,917 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:06:31,377 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:06:43,019 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:06:43,490 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:07:19,936 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:07:20,392 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:07:48,035 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:07:48,684 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:08:11,065 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:08:11,644 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:46:00,637 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:46:01,098 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:47:19,008 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:47:19,675 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:47:53,034 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:47:53,620 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:48:44,946 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:48:45,404 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:49:11,651 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:49:12,105 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:49:33,081 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:49:33,670 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:50:46,919 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:50:47,375 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:50:59,446 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:50:59,903 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:54:14,694 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:54:15,324 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:55:05,715 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:55:06,173 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:55:17,855 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:55:18,376 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:55:42,685 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:55:43,144 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:55:54,254 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:55:54,840 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:56:09,668 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:56:10,126 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 18:59:15,805 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 18:59:16,410 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
+2023-09-01 19:06:36,052 | animation_exporter | WARNING -- 
+
+NEW SESSION
+
+
+2023-09-01 19:06:36,720 | animation_exporter.animation_exporter_interface.controller.queue_controller | WARNING -- Queue path already present in queue list
