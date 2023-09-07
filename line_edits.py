@@ -202,6 +202,7 @@ class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
         return self.line_edit.text()
 
     def build_widget(self, filepath):
+        print('building with', filepath)
         self.line_edit = self.build_lineedit(filepath)
         self.button = self.build_button()
 
@@ -210,7 +211,9 @@ class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
 
 
     def build_lineedit(self, filepath):
-        filepath = filepath if os.path.exists(filepath) else ""
+        if filepath is None or not os.path.exists(filepath):
+            filepath = ""
+        # filepath = filepath if os.path.exists(filepath) else ""
         _line_edit = base_widgets.Line_Edit(text=filepath)
         _line_edit.textEdited.connect(self.textEdited.emit)
         self.FileSelected.connect(_line_edit.setText)

@@ -713,10 +713,17 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
         # self.selectionModel().currentRowChanged.connect(self.row_selection_changed)
 
     def selectionChanged(self, selected, deselected):
-        super().selectionChanged(selected, deselected)
-        # print(f"\n\nSELECTIONCAHNGED{selected.indexes()}\n{deselected.indexes()}\n\n\n")
-        #
-        # print('selectionhaschanged')
+        """
+        When selectio nchanges emit necessary data
+        Parameters
+        ----------
+        selected
+        deselected
+
+        Returns
+        -------
+
+        """
 
         selected_indexes = selected.indexes()
         deselected_indexes = deselected.indexes()
@@ -741,23 +748,17 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
 
         _model = self.model()
 
-        _selection_data = getDataFromSelectionModelSelection(
+        print('selecteditems', self.cachedIndexSelection)
+
+        selected_items = getDataFromSelectionModelSelection(
             selectionModelIndexes=self.cachedIndexSelection,
             dataModel=_model,
             role=QtCore.Qt.EditRole,
             column=0
         )
 
-        print('selectiondata',_selection_data)
-
-        if len(_selection_data) == 1:
-            selected_model_data = _selection_data[0]
-        else:
-            selected_model_data = self.combine_selection_data(_selection_data)
-
-        print('data', _selection_data, selected_model_data)
-
-        self.SelectionChanged.emit(selected_model_data)
+        self.SelectionChanged.emit(selected_items)
+        super().selectionChanged(selected, deselected)
 
 
 
