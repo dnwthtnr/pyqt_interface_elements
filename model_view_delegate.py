@@ -11,6 +11,59 @@ This file holds a data mode class specialized for the organization of catalog co
 from PySide2 import QtCore
 
 
+def getDataFromSelectionModelSelection(selectionModelIndexes, dataModel, role, column):
+    """
+    Gets role data from the given model using the given selection model indexes.
+
+    Parameters
+    ----------
+    selectionModelIndexes : list[QtCore.QModelIndex]
+        The selection indexes to get data for
+    dataModel : QtCore.QAbstractItemModel
+        The data model to query data from
+    role : QtCore.Qt.ItemDataRole
+        Role to get index data for
+    column : int
+        The column index to query data from
+
+    Returns
+    -------
+    list
+        A list of the model data derived from the given selection model indexes and role
+
+    """
+    return_data = []
+    print('called', selectionModelIndexes)
+    for selectionIndex in selectionModelIndexes:
+        _model_index = dataModel.index(selectionIndex.row(), column, dataModel.parent(selectionIndex.parent()))
+        _model_data = dataModel.data(_model_index, role)
+        print(_model_data)
+        return_data.append(_model_data)
+
+    return return_data
+
+def removeItemsFromList(targetList, itemsToRemove):
+    returnIndexList = targetList
+    for _item in itemsToRemove:
+        if _item in targetList:
+            _listIndex = returnIndexList.index(_item)
+            returnIndexList.pop(_listIndex)
+
+    return returnIndexList
+
+def addItemsToList(targetList, itemsToAdd):
+
+    print('return',targetList, itemsToAdd)
+    for _item in itemsToAdd:
+        print(_item)
+        targetList.append(_item)
+
+    print('return',targetList)
+
+    return targetList
+
+
+
 
 class CatalogContentTableModel(QtCore.QAbstractTableModel):
     CatalogEmpty = QtCore.Signal()
@@ -648,6 +701,8 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
 class Tree_Item_Selection_View(QtWidgets.QTreeView):
     SelectionChanged = QtCore.Signal(object)
 
+    cachedIndexSelection = []
+
     def __init__(self):
         super().__init__()
         self.setSelectionMode(QtWidgets.QTreeView.ExtendedSelection)
@@ -655,50 +710,61 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
     def setModel(self, model):
         super().setModel(model)
 
-        self.selectionModel().currentRowChanged.connect(self.row_selection_changed)
+        # self.selectionModel().currentRowChanged.connect(self.row_selection_changed)
 
-    @QtCore.Slot()
-    def row_selection_changed(self, current, previous):
+    def selectionChanged(self, selected, deselected):
+        super().selectionChanged(selected, deselected)
+        # print(f"\n\nSELECTIONCAHNGED{selected.indexes()}\n{deselected.indexes()}\n\n\n")
+        #
+        # print('selectionhaschanged')
+
+        selected_indexes = selected.indexes()
+        deselected_indexes = deselected.indexes()
+
+        print(f'\n\n\n\n{selected_indexes}\n{deselected_indexes}\n{len(selected_indexes), len(deselected_indexes)}\n\n\n\n')
+
+        if len(selected_indexes) == 0 and len(deselected_indexes) == 0:
+            return
+
+
+        if len(selected_indexes) != 0:
+            self.cachedIndexSelection = addItemsToList(
+                targetList=self.cachedIndexSelection,
+                itemsToAdd=selected_indexes
+            )
+
+        if len(deselected_indexes) != 0:
+            self.cachedIndexSelection = removeItemsFromList(
+                targetList=self.cachedIndexSelection,
+                itemsToRemove=deselected_indexes
+            )
+
         _model = self.model()
 
-        _current_index = self.selectionModel().currentIndex()
+        _selection_data = getDataFromSelectionModelSelection(
+            selectionModelIndexes=self.cachedIndexSelection,
+            dataModel=_model,
+            role=QtCore.Qt.EditRole,
+            column=0
+        )
 
-        _indexes = self.selectionModel().selectedIndexes()
+        print('selectiondata',_selection_data)
 
-        print(len(_indexes) + 1)
-        print(_current_index in _indexes)
+        if len(_selection_data) == 1:
+            selected_model_data = _selection_data[0]
+        else:
+            selected_model_data = self.combine_selection_data(_selection_data)
 
-        _selected_model_indexes = _indexes.append(_current_index)
+        print('data', _selection_data, selected_model_data)
 
-        model_data = None
-
-        for _selection_index in _selected_model_indexes:
-
-            _selected_model_index = _model.index(
-                _current_index.row(),
-                0,
-                _model.parent(_current_index)
-            )
-            _data = _model.data(
-                _selected_model_index,
-                role=QtCore.Qt.EditRole
-            )
-
-            if model_data is None:
-                model_data = _data
-                continue
-            else:
-                for _key in
-
-        # print(_data)
-
-        self.SelectionChanged.emit(_data)
+        self.SelectionChanged.emit(selected_model_data)
 
 
-    def combine_selection_data(self, currentData, newData):
 
+    def combine_selection_data(self, data):
+        print('data', data)
         # TODO IMPLEMENT THIS AS A WAY TO DEAL WITH THE DATA MODEL DATA QWUERIED FROM MULTIPLE ITEM SELECTIONS
-        raise NotImplementedError
+        raise NotImplementedError(f'Must reimplement {self.__class__.__name__}.combine_selection_data() to support multiple selection')
 
     def current_selection(self):
         _model = self.model()
