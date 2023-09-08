@@ -192,8 +192,6 @@ class RangeSlider(base_widgets.Slider):
         _slider_top = self.rect().top()
         _slider_bottom = self.rect().bottom()
 
-        # print(_slider_height)
-
         _top_left = QtCore.QPoint(_pixel_lower_limit + 5, _slider_top)
         _bottom_right   = QtCore.QPoint(_pixel_upper_limit - 5, _slider_bottom)
 
@@ -364,8 +362,6 @@ class RangeSlider(base_widgets.Slider):
         _difference_ratio = _widget_geometry_pixel_lower_limit / _widget_geometry_pixel_range
 
         _slider_range = self.maximum() - self.minimum()
-
-        # print(_widget_geometry_pixel_lower_limit, _widget_geometry_pixel_range, _difference_ratio)
 
         _val = _slider_range * _difference_ratio
 
@@ -569,6 +565,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
 
 class RangeElement(base_layouts.HorizontalLayout):
     deleted = QtCore.Signal(object)
+    rangeChanged = QtCore.Signal(list)
 
     def __init__(self, min, max):
         super().__init__()
@@ -588,8 +585,12 @@ class RangeElement(base_layouts.HorizontalLayout):
 
     def _build_range_line_edit(self, min, max):
         _range_widget = line_edits.TwoDimensionalFloat(min, max)
+        _range_widget.valueChanged.connect(self._rangeValueChanged)
 
         return _range_widget
+
+    def _rangeValueChanged(self, *args):
+        self.rangeChanged.emit(self.range())
 
     def _build_delete_button(self):
         _widget = base_widgets.Tool_Button()
@@ -649,9 +650,13 @@ class RangeListEditor(base_layouts.VerticalScrollArea):
 
         """
         _range_editor = RangeElement(range[0], range[1])
+        _range_editor.rangeChanged.connect(self.rangeElementChanged)
         _range_editor.deleted.connect(self.removeRange)
         self._range_widgets.append(_range_editor)
         self.addWidget(_range_editor)
+        self.rangeListChanged.emit()
+
+    def rangeElementChanged(self, range):
         self.rangeListChanged.emit()
 
     def removeRange(self, range_widget):

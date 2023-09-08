@@ -33,11 +33,11 @@ def getDataFromSelectionModelSelection(selectionModelIndexes, dataModel, role, c
 
     """
     return_data = []
-    print('called', selectionModelIndexes)
+    # print('called', selectionModelIndexes)
     for selectionIndex in selectionModelIndexes:
         _model_index = dataModel.index(selectionIndex.row(), column, dataModel.parent(selectionIndex.parent()))
         _model_data = dataModel.data(_model_index, role)
-        print(_model_data)
+        # print(_model_data)
         return_data.append(_model_data)
 
     return return_data
@@ -53,12 +53,12 @@ def removeItemsFromList(targetList, itemsToRemove):
 
 def addItemsToList(targetList, itemsToAdd):
 
-    print('return',targetList, itemsToAdd)
+    # print('return',targetList, itemsToAdd)
     for _item in itemsToAdd:
-        print(_item)
+        # print(_item)
         targetList.append(_item)
 
-    print('return',targetList)
+    # print('return',targetList)
 
     return targetList
 
@@ -292,7 +292,7 @@ class Selection_Tree_Model(QtCore.QAbstractItemModel):
         """
         _nodes = []
         for item_key in list(dictionary.keys()):
-            print(item_key)
+            # print(item_key)
             _item_dictionary = dictionary[item_key]
             _node = Node(_item_dictionary)
             _nodes.append(_node)
@@ -728,7 +728,7 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
         selected_indexes = selected.indexes()
         deselected_indexes = deselected.indexes()
 
-        print(f'\n\n\n\n{selected_indexes}\n{deselected_indexes}\n{len(selected_indexes), len(deselected_indexes)}\n\n\n\n')
+        # print(f'\n\n\n\n{selected_indexes}\n{deselected_indexes}\n{len(selected_indexes), len(deselected_indexes)}\n\n\n\n')
 
         if len(selected_indexes) == 0 and len(deselected_indexes) == 0:
             return
@@ -748,7 +748,7 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
 
         _model = self.model()
 
-        print('selecteditems', self.cachedIndexSelection)
+        # print('selecteditems', self.cachedIndexSelection)
 
         selected_items = getDataFromSelectionModelSelection(
             selectionModelIndexes=self.cachedIndexSelection,
@@ -763,7 +763,7 @@ class Tree_Item_Selection_View(QtWidgets.QTreeView):
 
 
     def combine_selection_data(self, data):
-        print('data', data)
+        # print('data', data)
         # TODO IMPLEMENT THIS AS A WAY TO DEAL WITH THE DATA MODEL DATA QWUERIED FROM MULTIPLE ITEM SELECTIONS
         raise NotImplementedError(f'Must reimplement {self.__class__.__name__}.combine_selection_data() to support multiple selection')
 

@@ -15,7 +15,6 @@ class ToggleIconButton(base_widgets.Tool_Button):
         super().__init__()
         self.enabled_icon = enabled_icon
         self.disabled_icon = disabled_icon
-        print(self.enabled_icon, self.disabled_icon)
 
         self.setIcon(self.disabled_icon)
         self._enabled = False

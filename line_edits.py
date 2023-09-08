@@ -162,7 +162,6 @@ class FileSelectOrCreateLineEdit(base_layouts.HorizontalLayout):
         _l.addWidget(_new_button)
 
         _file_browser.fileSelected.connect(self._file_selected)
-        # print(_w)
 
         self._w = QtWidgets.QWidget()
         self._w.setLayout(_l)
@@ -202,7 +201,6 @@ class Folder_Selection_Line_Edit(base_layouts.HorizontalLayout):
         return self.line_edit.text()
 
     def build_widget(self, filepath):
-        print('building with', filepath)
         self.line_edit = self.build_lineedit(filepath)
         self.button = self.build_button()
 

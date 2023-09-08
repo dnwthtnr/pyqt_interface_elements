@@ -312,13 +312,20 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         return attribute_editor.ranges()
 
     def identifier(self, value):
+
         if not isinstance(value, list):
+            return False
+
+        if len(value) == 0:
             return False
 
         # check if all contents are lists
         _contents_list = [isinstance(_item, list) for _item in value]
         if False in _contents_list:
             return False
+
+        # if len(value) < 2:
+        #     return False
 
         # check if all lists are of length 2
         _contents_all_ranges = [len(_item) == 2 for _item in value]

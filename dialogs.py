@@ -102,14 +102,11 @@ class FileDialog(base_windows.Dialog):
 
     @QtCore.Slot('createFile')
     def createFile(self, fileName):
-        print('yes')
         _qdirectory = self._file_browser.directory()
         _path = _qdirectory.path()
         _new_path = file_management.generate_unique_file_name(_path, fileName)
 
         file_management.create_file(_new_path)
-
-        print('filecreated', _path, _new_path)
 
         _qdirectory.refresh()
 
