@@ -11,7 +11,8 @@ from pyqt_interface_elements import (
     text_edit,
     labels,
     checkbox,
-    slider
+    slider,
+    combobox
 )
 
 
@@ -92,6 +93,31 @@ class LineEditAttributeEditor(AbstractAttributeEntry):
         attribute_editor.setText(newvalue)
 
 
+class BoolComboAttributeEditor(AbstractAttributeEntry):
+    IDENTIFIER = str
+
+    def __int__(self, attribute_name, attribute_value, ):
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = combobox.BoolComboBox()
+        _widget.setValue(attribute_value)
+        _widget.valueChanged.connect(self.valueEdited.emit)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        return attribute_editor.value()
+
+    def identifier(self, value):
+        if not isinstance(value, bool):
+            return False
+
+        return True
+
+    def _setAttributeWidgetValue(self, attribute_editor, newvalue):
+        attribute_editor.setValue(newvalue)
+
+
 class NameEditorAttributeEditor(AbstractAttributeEntry):
     IDENTIFIER = str
 
@@ -163,7 +189,6 @@ class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
 
     def _setAttributeWidgetValue(self, attribute_editor, newvalue):
         attribute_editor.setText(newvalue)
-
 
 
 class LargeListAttributeEditor(AbstractAttributeEntry):
@@ -293,7 +318,7 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         timeline_markers = attribute_value[2]
         value = attribute_value[0]
         _widget = slider.RangeListSelector(minimum=timeline_range[0], maximum=timeline_range[1],
-                                           range_list=value, values_to_mark=timeline_markers)
+                                           range_list=[value], values_to_mark=timeline_markers)
         _widget.rangeListChanged.connect(self.valueEdited.emit)
         return _widget
 
@@ -313,30 +338,47 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
 
     def identifier(self, value):
 
+        print('value', value)
+
         if not isinstance(value, list):
             return False
 
-        if len(value) == 0:
+        if len(value) != 3:
             return False
 
         # check if all contents are lists
-        _contents_list = [isinstance(_item, list) for _item in value]
-        if False in _contents_list:
+        if False in [isinstance(item, list) for item in value]:
+            return False
+
+        _range = value[1]
+        _markers = value[2]
+        _attribute_value = value[0]
+
+        if not isinstance(_attribute_value, list):
+            return False
+
+        if False in [isinstance(_item, float) for _item in _attribute_value]:
+            return False
+
+        if len(_attribute_value) != 2 or len(_range) != 2:
+            return False
+
+        if _range[0] >= _range[-1]:
             return False
 
         # if len(value) < 2:
         #     return False
 
         # check if all lists are of length 2
-        _contents_all_ranges = [len(_item) == 2 for _item in value]
-        if False in _contents_all_ranges:
-            return False
+        # _contents_all_ranges = [len(_item) == 2 for _item in _attribute_value]
+        # if False in _contents_all_ranges:
+        #     return False
 
         # check if all lists hold 2 ints
-        for _item in value:
-            _item_type_pair = [type(_item[0]), type(_item[1])]
-            if _item_type_pair != [float, float] and _item_type_pair != [int, int]:
-                return False
+        # for _item in value:
+        #     _item_type_pair = [type(_item[0]), type(_item[1])]
+        #     if _item_type_pair != [float, float] and _item_type_pair != [int, int]:
+        #         return False
 
         return True
 
