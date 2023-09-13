@@ -343,20 +343,63 @@ class MouseClickInterceptEventFilter(QtCore.QObject):
 class SelectableLayout(Layout):
 
     _clickEventFilter = None
+    _selected = False
     def __init__(self, orientation, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(layout_orientation=orientation, margins=margins, spacing=spacing)
         self.clickEventFilter = self.buildMouseClickEventFilter()
 
     def buildMouseClickEventFilter(self):
         _filter = MouseClickInterceptEventFilter()
-        _filter.leftMouseButtonClicked.connect()
+        _filter.leftMouseButtonClicked.connect(self.leftMouseButtonRelease)
         return _filter
+
+    def leftMouseButtonRelease(self):
+        self.selectionChangedEvent(not self.isSelected())
+
+
+    def isSelected(self):
+        """
+        Whether the layout is current selected
+
+        Returns
+        -------
+        bool
+            Current selection state
+
+        """
+        return self._selected
+
+    def selectionChangedEvent(self, selected):
+        """
+        Changed the current state of selection and calls to update.
+
+        Parameters
+        ----------
+        selected : bool
+            Whether the layout will be set to selected=
+
+        """
+        print(selected)
+        self._selected = selected
+        self.update()
 
 
     def addWidget(self, widget, *args, **kwargs):
+        """
+        Adds the widget to the layout and installs an event filter
+
+        Parameters
+        ----------
+        widget
+        args
+        kwargs
+
+        """
         widget.installEventFilter(self.clickEventFilter)
         super().addWidget(widget, *args, **kwargs)
 
+    def update(self):
+        super().update()
 
     def mousePressEvent(self, event):
         """
@@ -371,8 +414,24 @@ class SelectableLayout(Layout):
         """
 
         event.accept()
-        if event.button() != QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.LeftButton:
+            self.leftMouseButtonRelease()
             super().mousePressEvent(event)
+
+    def paintEvent(self, event):
+        event.accept()
+        super().paintEvent(event)
+
+        if self.isSelected():
+            _band = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+            _band.setGeometry(self.geometry())
+            _band.show()
+            # painter = QtGui.QPainter(self)
+            # style = QtWidgets.QApplication.style()
+            #
+            # _color = QtGui.QColor(155, 155, 155, 150)
+            #
+            # painter.fillRect(self.rect(), _color)
 
 
 
@@ -386,10 +445,10 @@ if __name__ == "__main__":
         from pyqt_interface_elements import base_widgets
 
         _s = base_widgets.Button(text='sel')
-        _sel = SelectableLayout(orientation=constants.horizontal, str="STRINGGGGG")
+        _sel = SelectableLayout(orientation=constants.horizontal)
         _sel.addWidget(_s)
         _d = base_widgets.Button(text='del')
-        _del = SelectableLayout(orientation=constants.horizontal, str="NO")
+        _del = SelectableLayout(orientation=constants.horizontal)
         _del.addWidget(_d)
         _window.addWidget(_sel)
         _window.addWidget(_del)
