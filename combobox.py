@@ -13,7 +13,6 @@ class BoolComboBox(base_widgets.ComboBox):
 
 
     def setValue(self, value):
-        print('set', value)
         if value is False:
             self.setCurrentText('False')
             return
@@ -26,4 +25,3 @@ class BoolComboBox(base_widgets.ComboBox):
 
     def currentSelectionChanged(self, text):
         self.valueChanged.emit(self.value())
-

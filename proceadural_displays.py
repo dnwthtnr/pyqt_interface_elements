@@ -94,7 +94,7 @@ class LineEditAttributeEditor(AbstractAttributeEntry):
 
 
 class BoolComboAttributeEditor(AbstractAttributeEntry):
-    IDENTIFIER = str
+    IDENTIFIER = bool
 
     def __int__(self, attribute_name, attribute_value, ):
         super().__init__(attribute_name, attribute_value)
@@ -103,6 +103,7 @@ class BoolComboAttributeEditor(AbstractAttributeEntry):
         _widget = combobox.BoolComboBox()
         _widget.setValue(attribute_value)
         _widget.valueChanged.connect(self.valueEdited.emit)
+        _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         return _widget
 
     def attribute_editor_value(self, attribute_editor):

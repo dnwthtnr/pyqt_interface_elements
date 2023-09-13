@@ -261,7 +261,6 @@ class TabWidget(QtWidgets.QTabWidget):
         super().__init__(*args, **kwargs)
 
 
-
 class ExpandWhenClicked(HorizontalLayout):
 
     def __init__(self, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
@@ -324,18 +323,78 @@ class ExpandWhenClicked(HorizontalLayout):
         else:
             self.expanded_layout.hide()
 
+
+class MouseClickInterceptEventFilter(QtCore.QObject):
+    leftMouseButtonClicked = QtCore.Signal()
+    rightMouseButtonClicked = QtCore.Signal()
+
+    def __init__(self):
+        super().__init__()
+
+    def eventFilter(self, watched, event):
+        if event.type() == QtCore.QEvent.Type.MouseButtonRelease:
+            _button = event.button()
+            if _button == QtCore.Qt.MouseButton.LeftButton:
+                self.leftMouseButtonClicked.emit()
+            elif _button == QtCore.Qt.MouseButton.RightButton:
+                self.rightMouseButtonClicked.emit()
+        return False
+
+class SelectableLayout(Layout):
+
+    _clickEventFilter = None
+    def __init__(self, orientation, margins=[0, 0, 0, 0], spacing=0):
+        super().__init__(layout_orientation=orientation, margins=margins, spacing=spacing)
+        self.clickEventFilter = self.buildMouseClickEventFilter()
+
+    def buildMouseClickEventFilter(self):
+        _filter = MouseClickInterceptEventFilter()
+        _filter.leftMouseButtonClicked.connect()
+        return _filter
+
+
+    def addWidget(self, widget, *args, **kwargs):
+        widget.installEventFilter(self.clickEventFilter)
+        super().addWidget(widget, *args, **kwargs)
+
+
+    def mousePressEvent(self, event):
+        """
+
+        Parameters
+        ----------
+        event : QtGui.QMouseEvent
+
+        Returns
+        -------
+
+        """
+
+        event.accept()
+        if event.button() != QtCore.Qt.LeftButton:
+            super().mousePressEvent(event)
+
+
+
 if __name__ == "__main__":
     import sys
 
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _window = TabWidget()
-        _window.addTab(QtWidgets.QPushButton("but"), "test")
+        _window = VerticalLayout()
+        from pyqt_interface_elements import base_widgets
 
-        _m = Splitter()
-        _m.addWidget(_window)
-        _m.show()
+        _s = base_widgets.Button(text='sel')
+        _sel = SelectableLayout(orientation=constants.horizontal, str="STRINGGGGG")
+        _sel.addWidget(_s)
+        _d = base_widgets.Button(text='del')
+        _del = SelectableLayout(orientation=constants.horizontal, str="NO")
+        _del.addWidget(_d)
+        _window.addWidget(_sel)
+        _window.addWidget(_del)
+
+        _window.show()
     except Exception as e:
         print(e)
 
