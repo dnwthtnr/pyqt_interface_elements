@@ -173,7 +173,7 @@ class ChooseDirectoryAttributeEditor(AbstractAttributeEntry):
 
     def attribute_editor(self, attribute_value):
         _widget = line_edits.Folder_Selection_Line_Edit(directory=attribute_value)
-        _widget.textEdited.connect(self.valueEdited.emit)
+        _widget.FileSelected.connect(self.valueEdited.emit)
         return _widget
 
     def attribute_editor_value(self, attribute_editor):
@@ -246,6 +246,7 @@ class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
 
     def attribute_editor(self, attribute_value):
         _widget = line_edits.TwoDimensionalFloat(x_val=attribute_value[0], y_val=attribute_value[1])
+        _widget.valueChanged.connect(self.valueEdited.emit)
         return _widget
 
     def attribute_editor_value(self, attribute_editor):
@@ -256,10 +257,10 @@ class TwoDimentionalLineEditAttributeEditor(AbstractAttributeEntry):
             return False
         elif not len(value) == 2:
             return False
-        elif [type(value[0]), type(value[1])] != [float, float]:
+        elif type(value[0]) not in [float, int] or type(value[1]) not in [float, int]:
             return False
-        else:
-            return True
+
+        return True
 
 
 class RangeCheckboxArrayAttributeEditor(AbstractAttributeEntry):
@@ -339,8 +340,6 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
 
     def identifier(self, value):
 
-        print('value', value)
-
         if not isinstance(value, list):
             return False
 
@@ -358,7 +357,7 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         if not isinstance(_attribute_value, list):
             return False
 
-        if False in [isinstance(_item, float) for _item in _attribute_value]:
+        if False in [isinstance(_item, float) for _item in _attribute_value] and False in [isinstance(_item, int) for _item in _attribute_value]:
             return False
 
         if len(_attribute_value) != 2 or len(_range) != 2:
@@ -384,9 +383,53 @@ class RangeSliderAttributeEditor(AbstractAttributeEntry):
         return True
 
 
+class TextListAttributeEditor(AbstractAttributeEntry):
+
+    def __int__(self, attribute_name, attribute_value):
+        super().__init__(attribute_name, attribute_value)
+
+    def attribute_editor(self, attribute_value):
+        _widget = slider.StringListEditor(textList=attribute_value)
+        _widget.textListChanged.connect(self.valueEdited.emit)
+        _widget.textListChanged.connect(print)
+        return _widget
+
+    def attribute_editor_value(self, attribute_editor):
+        """
+
+        Parameters
+        ----------
+        attribute_editor
+
+        Returns
+        -------
+        list[list]
+
+        """
+        return attribute_editor.textList()
+
+    def identifier(self, value):
+
+        if not isinstance(value, list):
+            return False
+
+        if len(value) == 0:
+            return False
+
+        # check if all contents are lists
+        if False in [isinstance(item, str) for item in value]:
+            return False
+
+        return True
+
+
 class AttributeHolder(base_layouts.Layout):
     valueChanged = QtCore.Signal(str, object)
 
+    # def __new__(cls, *args, **kwargs):
+    #     if not hasattr(cls, 'instance'):
+    #         cls.instance = super().__new__(cls)
+    #     return cls.instance
     def __init__(
             self,
             attribute_dictionary,
@@ -406,6 +449,7 @@ class AttributeHolder(base_layouts.Layout):
             spacing=spacing
         )
         self.attribute_entries = []
+        self.hiddenEntries = []
 
         if map_by_identity is True:
             if not isinstance(attribute_mapper, list):
@@ -426,7 +470,7 @@ class AttributeHolder(base_layouts.Layout):
         )
 
     def _build(self, attribute_dictionary, attribute_mapper, map_by_identity, map_by_type, attribute_title_width, non_editable_attributes, attributes_to_hide):
-        for _attribute_name, _attribute_value in attribute_dictionary.items():
+        for _attribute_name, _attribute_value in sorted(attribute_dictionary.items()):
             _attribute_entry = self.create_attribute_entry(
                 attribute_name=_attribute_name,
                 attribute_value=_attribute_value,
@@ -442,6 +486,7 @@ class AttributeHolder(base_layouts.Layout):
 
             if _attribute_name in attributes_to_hide:
                 _attribute_entry.hide()
+                self.hiddenEntries.append(_attribute_entry)
             if _attribute_name in non_editable_attributes:
                 _attribute_entry.setReadOnly(True)
 
@@ -497,6 +542,11 @@ class AttributeHolder(base_layouts.Layout):
         _index = self.attribute_entries.index(entry)
         self.attribute_entries.pop(_index)
         self.attribute_entries.insert(_index, newEntry)
+
+    def setHiddenAttributeVisibility(self, visible):
+        for _entry in self.hiddenEntries:
+            _entry.setVisible(visible)
+        return
 
 
 if __name__ == "__main__":

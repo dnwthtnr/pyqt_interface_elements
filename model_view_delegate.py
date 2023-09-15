@@ -701,13 +701,15 @@ class Table_Item_Selection_View(QtWidgets.QTableView):
 class Tree_Item_Selection_View(QtWidgets.QTreeView):
     SelectionChanged = QtCore.Signal(object)
 
-    cachedIndexSelection = []
 
     def __init__(self):
         super().__init__()
+        self.cachedIndexSelection = []
         self.setSelectionMode(QtWidgets.QTreeView.ExtendedSelection)
 
     def setModel(self, model):
+        print('setting model')
+        self.cachedIndexSelection = []
         super().setModel(model)
 
         # self.selectionModel().currentRowChanged.connect(self.row_selection_changed)

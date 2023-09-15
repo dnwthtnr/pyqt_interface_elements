@@ -395,101 +395,74 @@ class EditLabel(base_widgets.Line_Edit):
         self.cacheCurrentText()
 
 
-# class EditLabel(base_widgets.Label):
-#     _editState = False
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-#
-#
-#     def editState(self):
-#         return self._editState
-#
-#
-#     def paintEvent(self, event):
-#         """
-#
-#         Parameters
-#         ----------
-#         event : QtGui.QPaintEvent
-#
-#         """
-#         painter = QtGui.QPainter(self)
-#         style = QtWidgets.QApplication.style()
-#
-#         # event.accept()
-#
-#         if self.editState() is True:
-#             self._paintLabelEditor(painter=painter, style=style)
-#
-#         else:
-#             self._paintLabel(painter=painter, style=style)
-#
-#     def _paintLabel(self, painter, style):
-#         """
-#         Paints the label
-#
-#         Parameters
-#         ----------
-#         painter : QtGui.QPainter
-#         style : QtWidgets.QStyle
-#
-#         """
-#         style.drawItemText(
-#             painter,
-#             self.rect(),
-#             constants.align_center,
-#             style.standardPalette(),
-#             True,
-#             self.text()
-#         )
-#
-#     def _paintLabelEditor(self, painter, style):
-#         """
-#         Paints the label
-#
-#         Parameters
-#         ----------
-#         painter : QtGui.QPainter
-#         style : QtWidgets.QStyle
-#
-#         """
-#         style.drawComplexControl(QtWidgets.QStyle.SH_TextControl_FocusIndicatorTextCharFormat)
-#
-#         return
-#
-#     def keyPressEvent(self, event):
-#         """
-#
-#         Parameters
-#         ----------
-#         event : QtGui.QKeyEvent
-#
-#         """
-#
-#         _key = event.key()
-#         _text = self.text()
-#         event.accept()
-#         _text_key = event.text()
-#         _str_key = QtGui.QKeySequence(_key).toString()
-#
-#         new_text = self.text()
-#
-#         if _str_key == "Backspace":
-#             new_text = _text[:-1]
-#             print('bacjk', new_text)
-#         elif _str_key == "Spacebar":
-#             new_text = _text + ' '
-#         else:
-#             new_text = _text + _text_key
-#
-#         self.setText(new_text)
-#
-#         print(_str_key)
-#
-#
-#         return
+class DoubleClickLabel(base_widgets.Line_Edit):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._textAutoUpdate = True
+        self.setReadOnly(True)
+
+        self._cacheText = self.text()
+
+    def textAutoUpdate(self):
+        """
+        Whether the display text will be updated automatically on exit of editing
+
+        Returns
+        -------
+
+        """
+        return self._textAutoUpdate
+
+    def cacheCurrentText(self):
+        self._cacheText = self.text()
+
+    def getCachedText(self):
+        return self._cacheText
+
+    def setEditState(self, enabled):
+        if enabled is True:
+            self.setReadOnly(False)
+            self.setWindowModality(QtCore.Qt.ApplicationModal)
+            self.cacheCurrentText()
+            return
+
+        self.setReadOnly(True)
+        self.setWindowModality(QtCore.Qt.NonModal)
+
+        _edited_text = self.text()
+
+        if self.textAutoUpdate() is True:
+            self.setText(_edited_text)
+            return
+
+        self.setText(self.getCachedText())
+        return _edited_text
+
+    def setText(self, text):
+        super().setText(text)
+        self.cacheCurrentText()
+
+    def mouseDoubleClickEvent(self, event):
+        event.accept()
+        if self.isReadOnly() is True:
+            self.setEditState(True)
+
+        super().mouseDoubleClickEvent(event)
+
+    def keyPressEvent(self, event):
+        event.accept()
+
+        if event.key() == QtCore.Qt.Key_Return:
+            print('enter')
+            self.setEditState(False)
+        if event.key() == QtCore.Qt.Key_Escape:
+            _cachedText = self.getCachedText()
+            self.setEditState(False)
+            self.setText(_cachedText)
+
+
+        super().keyPressEvent(event)
 
 
 class NameEditor(base_layouts.HorizontalLayout):
@@ -643,7 +616,7 @@ if __name__ == "__main__":
 
 
     _app = QtWidgets.QApplication(sys.argv)
-    _view = EditLabel(text='text')
+    _view = DoubleClickLabel(text='text')
 
     # _win = base_windows.Main_Window()
     # _win.setCentralWidget(_view)

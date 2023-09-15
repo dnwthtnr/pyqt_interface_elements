@@ -1,13 +1,13 @@
 from functools import partial
+import os, sys
 from PySide2 import QtCore, QtWidgets, QtGui
 from pyqt_interface_elements import constants, buttons, icons
-
 
 class Layout(QtWidgets.QWidget):
 
     def __init__(self, layout_orientation, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._layout = QtWidgets.QVBoxLayout() if layout_orientation == constants.vertical else QtWidgets.QHBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout() if layout_orientation == constants.vertical else QtWidgets.QHBoxLayout()
 
         self.stretch = False
 
@@ -27,18 +27,22 @@ class Layout(QtWidgets.QWidget):
         )
         self.layout.setSpacing(spacing)
 
-        self.children = []
 
         self.setLayout(self.layout)
+
+    def children(self):
+        _returnList = []
+        for index in range(0, self.layout.count()):
+            _widgetItem = self.layout.itemAt(index)
+            _widget = _widgetItem.widget()
+            if _widget is not None:
+                _returnList.append(_widget)
+        return _returnList
 
     def paintEvent(self, event):
         self.setAutoFillBackground(True)
 
         super().paintEvent(event)
-
-    @property
-    def layout(self):
-        return self._layout
 
     def addStretch(self, stretch):
         self.layout.addStretch(stretch)
@@ -47,17 +51,14 @@ class Layout(QtWidgets.QWidget):
     def addWidget(self, widget, *args, **kwargs):
         if self.stretch is True:
             self.insertWidget(0, widget)
-            self.children.append(widget)
             return
         self.layout.addWidget(widget, *args, **kwargs)
-        self.children.append(widget)
 
     def addWidgets(self, widgets, *args, **kwargs):
         [self.addWidget(_widget, *args, **kwargs) for _widget in widgets]
 
     def insertWidget(self, index, widget):
         self.layout.insertWidget(index, widget)
-        self.children.append(widget)
 
     def addSpacerItem(self, spaceritem):
         self.layout.addSpacerItem(spaceritem)
@@ -68,27 +69,23 @@ class Layout(QtWidgets.QWidget):
     def clearAndAddWidget(self, widget, *args, **kwargs):
         self.clear_layout()
         self.layout.addWidget(widget, *args, **kwargs)
-        self.children.append(widget)
 
     def clearAndAddWidgets(self, widgets, *args, **kwargs):
         self.clear_layout()
         self.addWidgets(widgets, *args, **kwargs)
 
     def clear_layout(self):
-        if len(self.children) > 0:
-            for _child in self.children:
+        if len(self.children()) > 0:
+            for _child in self.children():
                 self.disown_child(_child)
 
-            self.children = []
 
     def childCount(self):
-        return len(self.children)
+        return len(self.children())
 
     def disown_child(self, child_widget):
         child_widget.setParent(None)
         del child_widget
-        # _index = self.children.index(child_widget)
-        # self.children.pop(_index)
 
     def get_child_at_position(self, localPoint):
         """
@@ -108,7 +105,7 @@ class Layout(QtWidgets.QWidget):
         if self.childCount() == 0:
             return None
 
-        for _child in self.children:
+        for _child in self.children():
             _child_geometry = _child.geometry()
             if _child_geometry.contains(localPoint.x(), localPoint.y()):
                 return _child
@@ -181,7 +178,7 @@ class ScrollArea(QtWidgets.QScrollArea):
 
     def __init__(self, layout_orientation, margins=[0, 0, 0, 0], spacing=0, *args, **kwargs):
         super().__init__()
-        self._layout = Layout(
+        self.layout = Layout(
             layout_orientation=layout_orientation,
             margins=margins,
             spacing=spacing,
@@ -191,10 +188,6 @@ class ScrollArea(QtWidgets.QScrollArea):
 
         self.setWidget(self.layout)
         self.setWidgetResizable(True)
-
-    @property
-    def layout(self):
-        return self._layout
 
     def addStretch(self, stretch):
         self.layout.addStretch(stretch)
@@ -233,7 +226,7 @@ class ScrollArea(QtWidgets.QScrollArea):
         return self.layout.get_child_at_position(localPoint)
 
     def children(self):
-        return self.layout.children
+        return self.layout.children()
 
 
 class VerticalScrollArea(ScrollArea):
@@ -253,6 +246,15 @@ class Splitter(QtWidgets.QSplitter):
     def __init__(self, orientation, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setOrientation(orientation)
+        self.preferredSizes = [100, 100]
+
+    def collapse(self, index):
+        _sizelist = [0]
+        _sizelist.insert(index, self.width())
+        self.setSizes(_sizelist)
+
+    def restorePrefferedSizes(self):
+        self.setSizes(self.preferredSizes)
 
 
 class TabWidget(QtWidgets.QTabWidget):
@@ -323,6 +325,15 @@ class ExpandWhenClicked(HorizontalLayout):
         else:
             self.expanded_layout.hide()
 
+    def installEventFilter(self, filterObj):
+        if len(self.collapsed_layout.children()) > 0:
+            for _child in self.collapsed_layout.children():
+                _child.installEventFilter(filterObj)
+                return
+        self.collapsed_layout.installEventFilter(filterObj)
+
+
+
 
 class MouseClickInterceptEventFilter(QtCore.QObject):
     leftMouseButtonClicked = QtCore.Signal()
@@ -341,12 +352,14 @@ class MouseClickInterceptEventFilter(QtCore.QObject):
         return False
 
 class SelectableLayout(Layout):
+    selectionChanged = QtCore.Signal(bool)
 
-    _clickEventFilter = None
-    _selected = False
     def __init__(self, orientation, margins=[0, 0, 0, 0], spacing=0):
         super().__init__(layout_orientation=orientation, margins=margins, spacing=spacing)
+        self._clickEventFilter = None
+        self._selected = False
         self.clickEventFilter = self.buildMouseClickEventFilter()
+        self.selectionBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
 
     def buildMouseClickEventFilter(self):
         _filter = MouseClickInterceptEventFilter()
@@ -355,7 +368,6 @@ class SelectableLayout(Layout):
 
     def leftMouseButtonRelease(self):
         self.selectionChangedEvent(not self.isSelected())
-
 
     def isSelected(self):
         """
@@ -367,7 +379,11 @@ class SelectableLayout(Layout):
             Current selection state
 
         """
-        return self._selected
+        return self.selectionBand.isVisible()
+
+    def setSelected(self, selected):
+        self.selectionChangedEvent(selected)
+
 
     def selectionChangedEvent(self, selected):
         """
@@ -379,9 +395,8 @@ class SelectableLayout(Layout):
             Whether the layout will be set to selected=
 
         """
-        print(selected)
-        self._selected = selected
-        self.update()
+        self.selectionBand.setVisible(selected)
+        self.selectionChanged.emit(selected)
 
 
     def addWidget(self, widget, *args, **kwargs):
@@ -398,40 +413,93 @@ class SelectableLayout(Layout):
         widget.installEventFilter(self.clickEventFilter)
         super().addWidget(widget, *args, **kwargs)
 
-    def update(self):
-        super().update()
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
 
-    def mousePressEvent(self, event):
-        """
+        self.selectionBand.setGeometry(self.rect())
 
-        Parameters
-        ----------
-        event : QtGui.QMouseEvent
+class ObjectCloseEventFilter(QtCore.QObject):
+    deleteEvent = QtCore.Signal(object)
 
-        Returns
-        -------
+    def __init__(self):
+        super().__init__()
 
-        """
+    def eventFilter(self, watched, event):
+        if event.type() == QtCore.QEvent.Type.DeferredDelete:
+            self.deleteEvent.emit(watched)
+            return True
+        return False
 
-        event.accept()
-        if event.button() == QtCore.Qt.LeftButton:
-            self.leftMouseButtonRelease()
-            super().mousePressEvent(event)
+class SelectableObjectHolder(Layout):
+    SingleSelection = 'SingleSelection'
+    MultiSelection = 'MultiSelection'
+    ExtendedSelection = 'ExtendedSelection'
 
-    def paintEvent(self, event):
-        event.accept()
-        super().paintEvent(event)
+    def __init__(self, orientation, margins=[0, 0, 0, 0], spacing=0):
+        super().__init__(layout_orientation=orientation, margins=margins, spacing=spacing)
 
-        if self.isSelected():
-            _band = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
-            _band.setGeometry(self.geometry())
-            _band.show()
-            # painter = QtGui.QPainter(self)
-            # style = QtWidgets.QApplication.style()
-            #
-            # _color = QtGui.QColor(155, 155, 155, 150)
-            #
-            # painter.fillRect(self.rect(), _color)
+        self._clickEventFilter = None
+        self._selectionMode = self.SingleSelection
+        self._lastSelected = None
+        # self.selectionLayouts = []
+
+        self.childDeleteEventFilter = self._buildChildDeleteEventFilter()
+
+    def selectionLayouts(self):
+        return super().children()
+
+    def currentSelection(self):
+        _selected = []
+        for _selectableLayout in self.selectionLayouts():
+            if _selectableLayout.isSelected() is True:
+                _selected.append(_selectableLayout.children()[0])
+        return _selected
+
+    def setSelectionMode(self, selectionMode):
+        self._selectionMode = selectionMode
+
+    def selectionMode(self):
+        return self._selectionMode
+
+    def childSelectionChangeEvent(self, selected, obj):
+        if selected is True:
+            if self.selectionMode() == self.SingleSelection:
+                if self._lastSelected is not None and self._lastSelected != obj:
+                    self._lastSelected.setSelected(False)
+                self._lastSelected = obj
+            elif self.selectionMode() == self.MultiSelection:
+                self._lastSelected = obj
+
+
+    def addWidget(self, widget, *args, **kwargs):
+        widget.installEventFilter(self.childDeleteEventFilter)
+
+        _selectableLayout = SelectableLayout(orientation=constants.horizontal)
+        _selectableLayout.selectionChanged.connect(partial(self.childSelectionChangeEvent, obj=_selectableLayout))
+        _selectableLayout.addWidget(widget, *args, **kwargs)
+        super().addWidget(_selectableLayout)
+
+    def disown_child(self, child_widget):
+        for _selectableLayout in self.selectionLayouts():
+            if isinstance(_selectableLayout, SelectableLayout):
+                if child_widget in _selectableLayout.children():
+                    super().disown_child(_selectableLayout)
+                    _selectableLayout.deleteLater()
+
+    def clear_layout(self):
+        for _widget in self.selectionLayouts():
+            super().disown_child(_widget)
+
+    def _buildChildDeleteEventFilter(self):
+        _widgetCloseEventFilter = ObjectCloseEventFilter()
+        _widgetCloseEventFilter.deleteEvent.connect(self.disown_child)
+        return _widgetCloseEventFilter
+
+class VerticalSelectableObjectHolder(SelectableObjectHolder):
+    
+    def __init__(self):
+        super().__init__(orientation=constants.vertical)
+
 
 
 
@@ -441,17 +509,14 @@ if __name__ == "__main__":
     _app = QtWidgets.QApplication(sys.argv)
 
     try:
-        _window = VerticalLayout()
+        _window = SelectableObjectHolder(orientation=constants.vertical)
+        _window.setSelectionMode(SelectableObjectHolder.MultiSelection)
         from pyqt_interface_elements import base_widgets
 
-        _s = base_widgets.Button(text='sel')
-        _sel = SelectableLayout(orientation=constants.horizontal)
-        _sel.addWidget(_s)
+        _s = ExpandWhenClicked()
         _d = base_widgets.Button(text='del')
-        _del = SelectableLayout(orientation=constants.horizontal)
-        _del.addWidget(_d)
-        _window.addWidget(_sel)
-        _window.addWidget(_del)
+        _window.addWidget(_s)
+        _window.addWidget(_d)
 
         _window.show()
     except Exception as e:

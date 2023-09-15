@@ -84,6 +84,7 @@ def get_media(name):
 
 
 loading_wheel = partial(get_media, 'loads')
+loadingSceneData = partial(get_media, 'loadingSceneData')
 
 if __name__ == "__main__":
     import sys

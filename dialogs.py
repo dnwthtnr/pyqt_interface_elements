@@ -22,7 +22,7 @@ class ConfirmDialogue(base_windows.Dialog):
     def __init__(self, display_text, cancel_text="Cancel", confirm_text="Confirm", parent=None):
         super().__init__(parent=parent)
 
-        _label = base_widgets.Label(text=display_text)
+        _label = base_widgets.Label(text=display_text, alignment=constants.align_center)
 
         _cancel = base_widgets.Button(text=cancel_text)
         _cancel.clicked.connect(self._cancel)

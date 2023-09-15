@@ -1,11 +1,15 @@
 import copy
 from PySide2 import QtCore, QtWidgets, QtGui
 from pyqt_interface_elements import base_widgets, constants, styles, base_layouts, line_edits, icons
+from functools import partial
+import math_operations
+
 class RangeSlider(base_widgets.Slider):
     sliderMoved = QtCore.Signal(float, float)
 
-    def __init__(self, minimum, maximum, values_to_mark=[]):
+    def __init__(self, minimum, maximum, values_to_mark=[], threshold=1):
         super().__init__()
+        self.threshold = threshold
         self.setOrientation(constants.horizontal)
 
         self._marked_values = values_to_mark
@@ -17,6 +21,7 @@ class RangeSlider(base_widgets.Slider):
         self._upper_bound = self.maximum()
 
         self._pressed_element = None
+        self.setMinimumHeight(50)
 
     # region Value Setters
 
@@ -78,6 +83,8 @@ class RangeSlider(base_widgets.Slider):
             self._marked_values.pop(_index)
 
     def lowerBound(self):
+        if self.threshold == 1:
+            return int(self._lower_bound)
         return self._lower_bound
 
     def setLowerBound(self, value):
@@ -85,6 +92,8 @@ class RangeSlider(base_widgets.Slider):
         self.update()
 
     def upperBound(self):
+        if self.threshold == 1:
+            return int(self._upper_bound)
         return self._upper_bound
 
     def setUpperBound(self, value):
@@ -230,7 +239,7 @@ class RangeSlider(base_widgets.Slider):
     def paintTickMarks(self, painter, style):
         _multiple_of = 20
         _draw_number = False
-        for _value in range(self.maximum()-self.minimum()):
+        for _value in range(self.minimum(), self.maximum()):
 
             _result = _value / _multiple_of
             if not _result.is_integer():
@@ -310,6 +319,7 @@ class RangeSlider(base_widgets.Slider):
         self.update()
 
         self.sliderMoved.emit(self._lower_bound, self._upper_bound)
+
 
     # region
     def point_dimension_for_orientation(self, point):
@@ -552,6 +562,7 @@ class RangeSelector(base_layouts.HorizontalLayout):
 
         """
         _widget = base_widgets.Button(text=text)
+        _widget.setMinimumWidth(60)
         # _widget.setIcon(icons.plus)
         _widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         _widget.clicked.connect(self.selectButtonClicked)
@@ -732,6 +743,155 @@ class RangeListSelector(base_layouts.Splitter):
 
     def emitRangeListChanged(self):
         self.rangeListChanged.emit(self.ranges())
+
+
+
+
+class StringElement(base_layouts.HorizontalLayout):
+    deleted = QtCore.Signal(object)
+    textEdited = QtCore.Signal(list)
+
+    def __init__(self, text):
+        super().__init__()
+
+        self._lineEdit = line_edits.DoubleClickLabel(text=text)
+        self._lineEdit.textEdited.connect(self.textChanged)
+
+        self.addWidget(self._lineEdit)
+
+    def text(self):
+        return self._lineEdit.getCachedText()
+
+    def setText(self, text):
+        self._lineEdit.setText(text)
+
+    def textChanged(self, *args):
+        self.textEdited.emit(self.text())
+
+    def installEventFilter(self, filterObj):
+        if len(self.children()) > 0:
+            for _child in self.children():
+                _child.installEventFilter(filterObj)
+
+    @QtCore.Slot()
+    def _delete(self):
+        self.deleteLater()
+
+class StringListEditor(base_layouts.VerticalLayout):
+    textListChanged = QtCore.Signal(list)
+
+    _call = 0
+    def __init__(self, textList=[]):
+        """
+        Widget to manage a list of ranges
+
+        Parameters
+        ----------
+        ranges : list[list[float, float]]
+            The list of ranges to display
+        """
+        super().__init__()
+        _toolbar = self._buildToolBar()
+
+        self.textHolder = base_layouts.VerticalSelectableObjectHolder()
+        self.textHolder.addStretch(1)
+        # self.textHolder.addStretch(1)
+        _holderScrollWidget = base_layouts.VerticalScrollArea()
+        _holderScrollWidget.addWidget(self.textHolder)
+
+        self.addWidget(_holderScrollWidget)
+        self.addWidget(_toolbar)
+
+        self.addTextList(textList)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+    def _buildToolBar(self):
+        _addButton = self._buildAddButton()
+        _deleteButton = self._buildDeleteButton()
+
+        _widget = base_layouts.HorizontalLayout()
+        _widget.addStretch(1)
+        _widget.insertWidget(-1, _addButton)
+        _widget.insertWidget(-1, _deleteButton)
+        return _widget
+
+    def _buildAddButton(self):
+        """
+        Builds a button displaying the duplicate icon that calls duplicate_queue_button_clicked when clicked
+
+        Returns
+        -------
+        base_widgets.Tool_Button
+            The new button
+
+        """
+        _widget = base_widgets.Tool_Button()
+        _widget.setToolTip(f'Add new queue')
+        _widget.setIcon(icons.plus)
+        _widget.clicked.connect(partial(self.addText, ''))
+        return _widget
+
+    def _deleteButtonClickEvent(self):
+        _selectedTextWidgets = self.textHolder.currentSelection()
+        for _textWidget in _selectedTextWidgets:
+            self.textHolder.disown_child(_textWidget)
+
+    def textList(self):
+        """
+        The ranges currently being displayed
+
+        Returns
+        -------
+        list[list[float, float]]
+            List of the ranges
+
+        """
+        _list = []
+        for _selLayout in self.textHolder.selectionLayouts():
+            _widget = _selLayout.children()[0]
+            _text = _widget.text()
+            _list.append(_text)
+
+        return _list
+
+    def addText(self, text):
+        """
+        Builds a widget to display the given range and adds it
+
+        Parameters
+        ----------
+        range : list[float, float]
+            Range to add to list
+
+        """
+        _widget = StringElement(text=text)
+        _widget.textEdited.connect(self.textListEditEvent)
+        self.textHolder.addWidget(_widget)
+        self.textListEditEvent()
+
+    def _buildDeleteButton(self):
+        _widget = base_widgets.Tool_Button()
+        _widget.setIcon(icons.delete)
+        _widget.setToolTip(f"Delete Selected")
+        _widget.clicked.connect(self._deleteButtonClickEvent)
+        return _widget
+
+
+    def addTextList(self, textList):
+        """
+        Adds a list of ranges to the display
+
+        Parameters
+        ----------
+        ranges : list[list[float, float]]
+            Ranges to add to display
+
+        """
+        for _text in textList:
+            self.addText(_text)
+
+    def textListEditEvent(self, *args):
+        self.textListChanged.emit(self.textList())
 
 
 if __name__ == "__main__":
